@@ -417,7 +417,7 @@
 </style>
 
 <style>
-  html, body{ height:auto !important; overflow:visible !important; } /* let each system manage its own scroll/overflow below the shared bar */
+  html, body{ height:auto !important; overflow:visible !important; }
   #sharedTopBar{
     position:sticky; top:0; z-index:9999; display:flex; align-items:center; justify-content:center;
     gap:8px; padding:10px 16px; background:#0b0f14; border-bottom:1px solid #26323f;
@@ -428,10 +428,10 @@
     border:1px solid var(--border,#26323f); background:var(--panel-2,#111820); color:var(--text-dim,#8fa0b3); cursor:pointer;
   }
   #sharedTopBar button.active{ background:var(--accent-dim,#2e4a70); border-color:var(--accent,#4f8ff0); color:var(--text,#e7edf3); }
-  body.authPending #sharedTopBar{ display:none !important; } /* ยังไม่ล็อกอิน ไม่ต้องโชว์แถบสลับโหมดทับหน้า login */
+  body.authPending #sharedTopBar{ display:none !important; }
   body.mode-old #app{ display:none !important; }
   body.mode-new #oldAppWrap{ display:none !important; }
-  body.mode-new #app{ height:calc(100vh - 49px) !important; } /* subtract shared bar height so the 3D canvas still fills the rest */
+  body.mode-new #app{ height:calc(100vh - 49px) !important; }
   .redirect3dNote{
     padding:40px 20px; text-align:center; color:var(--color-text-secondary,#8fa0b3);
     font-size:14px; line-height:1.8; border:1px dashed var(--color-border-tertiary,#26323f); border-radius:12px;
@@ -2095,7 +2095,7 @@ html,body{margin:0;padding:0;background:#09101f;color:#eef2fa;min-height:100%;ov
 <!-- 3D -->
 <div id="panel-model3d" class="panel">
   <div class="redirect3dNote">
-    <p>ภาพ 3D ของหน้านี้ถูกยกเลิกแล้ว — ใช้โมเดล 3D ตัวใหม่ (ถูกต้องกว่า รองรับทุกรูปทรงหลังคา) ที่แถบด้านบนสุดแทน</p>
+    <p>ภาพ 3D ของหน้านี้ถูกยกเลิกแล้ว — ใช้โมเดล 3D ตัวใหม่ (ถูกต้องกว่า รองรับทุกรูปทรงหลังคา อัปเดตสดจากฟอร์มนี้อัตโนมัติ) ที่แถบด้านบนสุดแทน</p>
   </div>
 </div>
 </div>
@@ -4683,6 +4683,152 @@ updateAll();updateRafterCarried();
       b.addEventListener('click', function(){ setMode(b.dataset.mode); });
     });
     setMode('old');
+  })();
+
+  /* ============ Real-time sync: ระบบเดิม (index_v2) → โมเดล 3D ใหม่ (ทางเดียว) ============
+     หลักการ: "ตั้งค่าฟิลด์ของเว็บใหม่ + จำลองคลิก/พิมพ์จริง" (ไม่แตะ internal state ของเว็บใหม่ที่ IIFE
+     ปิดไว้อยู่แล้ว) เพื่อให้ event listener เดิมของเว็บใหม่ทำงานตามปกติทุกอย่าง (validate, scheduleRebuild ฯลฯ) */
+  (function(){
+    function setNewVal(id, val){
+      var el = document.getElementById(id);
+      if (!el || val === undefined || val === null || String(el.value) === String(val)) return;
+      el.value = val;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    function clickPill(fieldSel, val){
+      var group = document.querySelector(fieldSel);
+      if (!group) return;
+      var btn = group.querySelector('[data-value="' + val + '"]');
+      if (btn && !btn.classList.contains('active') && !btn.classList.contains('selected')) btn.click();
+    }
+    function clickShape(shape){
+      var btn = document.querySelector('.shapeCard[data-shape="' + shape + '"]');
+      if (btn && !btn.classList.contains('selected')) btn.click();
+    }
+    function clickSizeIdx(gridId, idx){
+      var grid = document.getElementById(gridId);
+      if (!grid || idx == null || idx < 0) return;
+      var btns = grid.querySelectorAll('button');
+      if (btns[idx] && !btns[idx].classList.contains('active')) btns[idx].click();
+    }
+    function clickCatThenSize(catFieldSel, gridId, cat, idx){
+      clickPill(catFieldSel, cat);
+      setTimeout(function(){ clickSizeIdx(gridId, idx); }, 60); // รอ size grid re-render ใหม่ตามหมวดหมู่ก่อน
+    }
+
+    // ---- ข้อมูลร่วม ----
+    function syncShared(){
+      var w = document.getElementById('bldg-width'), l = document.getElementById('bldg-len');
+      var peak = document.getElementById('roof-peak'), edge = document.getElementById('roof-edge');
+      if (w) setNewVal('pSpan', w.value);
+      if (l) setNewVal('pLength', l.value);
+      if (peak && edge) {
+        var rise = (parseFloat(peak.value) || 0) - (parseFloat(edge.value) || 0);
+        setNewVal('pRise', rise);
+        setNewVal('pEave', edge.value);
+      }
+    }
+    ['bldg-width', 'bldg-len', 'roof-peak', 'roof-edge'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('input', syncShared);
+    });
+
+    var SHAPE_MAP = { mono: 'mono', gable: 'gable', gable_mono: 'gable', flat: 'mono', carport: 'mono' };
+    if (typeof window.setShape === 'function') {
+      var _setShape = window.setShape;
+      window.setShape = function(s){ _setShape(s); clickShape(SHAPE_MAP[s] || 'mono'); syncShared(); };
+    }
+
+    var ROOF_MAP = { metal: 'metal', tile2: 'double', cpac: 'cpac' };
+    if (typeof window.setRoofType === 'function') {
+      var _setRoofType = window.setRoofType;
+      window.setRoofType = function(t){ _setRoofType(t); clickPill('[data-field="roofMaterial"]', ROOF_MAP[t]); };
+    }
+    if (typeof window.setCeil === 'function') {
+      var _setCeil = window.setCeil;
+      window.setCeil = function(v){ _setCeil(v); clickPill('[data-field="ceiling"]', v ? 'yes' : 'no'); };
+    }
+    if (typeof window.setLL === 'function') {
+      var _setLL = window.setLL;
+      window.setLL = function(v){ _setLL(v); clickPill('[data-field="liveLoadYear"]', v === 30 ? 'pre' : 'post'); };
+    }
+    if (typeof window.setTerrain === 'function') {
+      var _setTerrain = window.setTerrain;
+      window.setTerrain = function(t){ _setTerrain(t); clickPill('[data-field="windTerrain"]', t); };
+    }
+
+    // ---- แป ----
+    if (typeof window.setSag === 'function') {
+      var _setSag = window.setSag;
+      window.setSag = function(v){ _setSag(v); clickPill('[data-field="sagRod"]', v); };
+    }
+    var purlinSpacingEl = document.getElementById('purlin-spacing');
+    if (purlinSpacingEl) purlinSpacingEl.addEventListener('input', function(){ setNewVal('pPurlinSpacing', purlinSpacingEl.value); });
+
+    function syncPurlinSize(){
+      var typeHot = document.getElementById('type-hot');
+      if (!typeHot || !typeHot.classList.contains('active')) return; // sync ได้แค่ประเภท "เหล็กรูปพรรณ มอก." (มีตารางตรงกับเว็บใหม่)
+      var catSel = document.getElementById('hot-cat'), sizeSel = document.getElementById('hot-section');
+      if (!catSel || !sizeSel) return;
+      var CAT_MAP = { c: 'cchannel', rhs: 'rhs', shs: 'shs' };
+      clickCatThenSize('[data-field="purlinCategory"]', 'purlinSizeGrid', CAT_MAP[catSel.value] || 'cchannel', sizeSel.selectedIndex);
+    }
+    ['hot-cat', 'hot-section'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('change', function(){ setTimeout(syncPurlinSize, 80); });
+    });
+
+    // ---- จันทัน ----
+    if (typeof window.setRType === 'function') {
+      var _setRType = window.setRType;
+      window.setRType = function(t){ _setRType(t); clickPill('[data-field="rafterSectionType"]', t === 'dc' ? '2c' : 'hotrolled'); };
+    }
+    function syncRafterSize(){
+      var catSel = document.getElementById('r-hot-cat'), sizeSel = document.getElementById('r-hot-section');
+      if (!catSel || !sizeSel) return;
+      var CAT_MAP = { c: 'cchannel', rhs: 'rhs', shs: 'shs' };
+      clickCatThenSize('[data-field="rafterCategory"]', 'rafterSizeGrid', CAT_MAP[catSel.value] || 'cchannel', sizeSel.selectedIndex);
+    }
+    ['r-hot-cat', 'r-hot-section'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('change', function(){ setTimeout(syncRafterSize, 80); });
+    });
+
+    // ---- โครงถัก ----
+    var tHeightEl = document.getElementById('t-height'), tPanelsEl = document.getElementById('t-panels');
+    if (tHeightEl) tHeightEl.addEventListener('input', function(){ setNewVal('pTrussDepth', tHeightEl.value); });
+    if (tPanelsEl) tPanelsEl.addEventListener('input', function(){ setNewVal('pPanels', tPanelsEl.value); });
+
+    if (typeof window.setTrussCol === 'function') {
+      var _setTrussCol = window.setTrussCol;
+      window.setTrussCol = function(n){ _setTrussCol(n); clickPill('[data-field="centerColumn"]', n === 'custom' ? 'other' : n); };
+    }
+    if (typeof window.selPat === 'function') {
+      var _selPat = window.selPat;
+      var DIAG_MAP = { ll: 'left', lr: 'alt', rl: 'alt', no: 'none' };
+      window.selPat = function(type, val, el){
+        _selPat(type, val, el);
+        if (type === 'diag') clickPill('[data-field="diagonalDir"]', DIAG_MAP[val] || 'left');
+      };
+    }
+    // ตงบน/ตงล่าง/ค้ำยัน (m-cat-tc/bc/web, m-size-tc/bc/web) — สร้างแบบไดนามิก ใช้ event delegation
+    var TSEC_CAT_MAP = { rhs:'rhs', shs:'shs', angle:'angle', dangle:'dangle', ibeam:'ibeam', hbeam:'hbeam', wf:'wf', cutbeam:'cutbeam' };
+    var TC_ROLE_MAP = { tc: 'topChord', bc: 'bottomChord', web: 'web' };
+    function syncTrussMemberSize(mid){
+      var role = TC_ROLE_MAP[mid];
+      if (!role) return; // 'diag' ใช้ค่าเดียวกับ web อยู่แล้วในเว็บใหม่ ไม่ต้อง sync แยก
+      var catSel = document.getElementById('m-cat-' + mid), sizeSel = document.getElementById('m-size-' + mid);
+      if (!catSel || !sizeSel) return;
+      clickCatThenSize('[data-field="' + role + 'Cat"]', role + 'SizeGrid', TSEC_CAT_MAP[catSel.value] || 'rhs', sizeSel.selectedIndex);
+    }
+    document.addEventListener('change', function(e){
+      var id = e.target && e.target.id;
+      if (!id) return;
+      if (/^m-cat-(tc|bc|web)$/.test(id) || /^m-size-(tc|bc|web)$/.test(id)) {
+        var mid = id.replace(/^m-(cat|size)-/, '');
+        setTimeout(function(){ syncTrussMemberSize(mid); }, 80);
+      }
+    });
   })();
 </script>
 </body>
