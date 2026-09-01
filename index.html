@@ -436,9 +436,11 @@
     padding:40px 20px; text-align:center; color:var(--color-text-secondary,#8fa0b3);
     font-size:14px; line-height:1.8; border:1px dashed var(--color-border-tertiary,#26323f); border-radius:12px;
   }
-  /* ซ่อนแท็บ "ข้อมูล/ตั้งค่า" ของเว็บใหม่ในระบบผสมนี้ — กรอกข้อมูลที่ระบบเดิมแทน (sync สดมาให้อยู่แล้ว)
-     คง element ทั้งหมดไว้ใน DOM (แค่ซ่อนปุ่ม) เพราะโค้ดภายใน + กลไก sync ยังต้องใช้ element เหล่านี้อยู่ */
+  /* ซ่อนแท็บ "ข้อมูล/ตั้งค่า" ของเว็บใหม่ในระบบผสมนี้ — กรอกข้อมูลที่ระบบเดิมแทน (sync สดมาให้อยู่แล้ว) */
   #tabBtnData{ display:none !important; }
+  /* ซ่อนแท็บ "ภาพ 3D" ของระบบเดิม — ใช้ปุ่ม "โมเดล 3D (ใหม่)" ที่แถบบนสุดแทน
+     (แค่ซ่อนปุ่ม ไม่ลบ element เพราะ switchTab() เดิมอ้างอิงตำแหน่ง index ของ .tab ตามลำดับใน DOM) */
+  button[onclick="switchTab('model3d')"]{ display:none !important; }
 </style>
 </head>
 <body class="authPending">
@@ -2097,8 +2099,29 @@ html,body{margin:0;padding:0;background:#09101f;color:#eef2fa;min-height:100%;ov
 
 <!-- 3D -->
 <div id="panel-model3d" class="panel">
-  <div class="redirect3dNote">
-    <p>ภาพ 3D ของหน้านี้ถูกยกเลิกแล้ว — ใช้โมเดล 3D ตัวใหม่ (ถูกต้องกว่า รองรับทุกรูปทรงหลังคา อัปเดตสดจากฟอร์มนี้อัตโนมัติ) ที่แถบด้านบนสุดแทน</p>
+  <p class="sec-label">ภาพ 3D โครงสร้าง — Interactive</p>
+  <div class="canvas-wrap" id="viewer3d-wrap">
+    <div id="viewer3d-container"></div>
+    <div id="viewer3d-loading">กำลังโหลด Three.js…</div>
+  </div>
+  <div class="v3d-controls">
+    <div class="v3d-row">
+      <button class="v3d-btn active" data-view="iso">Iso</button>
+      <button class="v3d-btn" data-view="top">Top</button>
+      <button class="v3d-btn" data-view="front">Front</button>
+      <button class="v3d-btn" data-view="side">Side</button>
+      <button class="v3d-btn" data-auto>↻ Auto-rotate</button>
+      <button class="v3d-btn" data-screenshot>📸 ภาพ PNG</button>
+      <button class="v3d-btn v3d-btn-primary" data-refresh onclick="if(window.draw3D)window.draw3D()">🔄 อัปเดตจากฟอร์ม</button>
+    </div>
+    <div class="v3d-toggles">
+      <label class="v3d-toggle"><input type="checkbox" data-layer="roof" checked><span class="v3d-dot" style="background:#94a3b8"></span>หลังคา</label>
+      <label class="v3d-toggle"><input type="checkbox" data-layer="truss" checked><span class="v3d-dot" style="background:#38bdf8"></span>โครงถัก / Truss</label>
+      <label class="v3d-toggle"><input type="checkbox" data-layer="purlin" checked><span class="v3d-dot" style="background:#f97316"></span>แป / Purlin</label>
+      <label class="v3d-toggle"><input type="checkbox" data-layer="rafter" checked><span class="v3d-dot" style="background:#10b981"></span>จันทัน / Rafter</label>
+      <label class="v3d-toggle"><input type="checkbox" data-layer="ground" checked><span class="v3d-dot" style="background:#475569"></span>พื้น/ตาราง</label>
+    </div>
+    <div class="v3d-hint">🖱️ Drag = หมุน • Scroll = ซูม • Right-click drag = แพน • Touch รองรับ</div>
   </div>
 </div>
 </div>
