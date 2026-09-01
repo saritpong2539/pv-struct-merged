@@ -417,7 +417,6 @@
 </style>
 
 <style>
-  /* ---- bridge: mode switcher between old 2D app and new 3D engine ---- */
   #modeSwitcher{ position:fixed; top:12px; left:12px; z-index:9999; display:flex; gap:6px; pointer-events:auto; }
   #modeSwitcher button{
     font-family:var(--sans); font-size:12px; font-weight:600; padding:7px 14px; border-radius:8px;
@@ -428,10 +427,12 @@
   body.mode-old #app{ display:none !important; }
   body.mode-new #oldAppWrap{ display:none !important; }
   body.mode-new{ overflow:hidden !important; height:100% !important; }
-  /* กันโมเดลสวิตช์ทับแท็บบาร์ของโมเดล 3D / หัวเว็บของระบบเดิม (ทั้งคู่ลอยอยู่มุมบนซ้ายพอดี) */
   body.mode-new #tabsBar{ padding-left:190px; }
   body.mode-old .app-header{ padding-left:270px; }
-
+  .redirect3dNote{
+    padding:40px 20px; text-align:center; color:var(--color-text-secondary,#8fa0b3);
+    font-size:14px; line-height:1.8; border:1px dashed var(--color-border-tertiary,#26323f); border-radius:12px;
+  }
 </style>
 </head>
 <body class="authPending">
@@ -2089,29 +2090,8 @@ html,body{margin:0;padding:0;background:#09101f;color:#eef2fa;min-height:100%;ov
 
 <!-- 3D -->
 <div id="panel-model3d" class="panel">
-  <p class="sec-label">ภาพ 3D โครงสร้าง — Interactive</p>
-  <div class="canvas-wrap" id="viewer3d-wrap">
-    <div id="viewer3d-container"></div>
-    <div id="viewer3d-loading">กำลังโหลด Three.js…</div>
-  </div>
-  <div class="v3d-controls">
-    <div class="v3d-row">
-      <button class="v3d-btn active" data-view="iso">Iso</button>
-      <button class="v3d-btn" data-view="top">Top</button>
-      <button class="v3d-btn" data-view="front">Front</button>
-      <button class="v3d-btn" data-view="side">Side</button>
-      <button class="v3d-btn" data-auto>↻ Auto-rotate</button>
-      <button class="v3d-btn" data-screenshot>📸 ภาพ PNG</button>
-      <button class="v3d-btn v3d-btn-primary" data-refresh onclick="if(window.draw3D)window.draw3D()">🔄 อัปเดตจากฟอร์ม</button>
-    </div>
-    <div class="v3d-toggles">
-      <label class="v3d-toggle"><input type="checkbox" data-layer="roof" checked><span class="v3d-dot" style="background:#94a3b8"></span>หลังคา</label>
-      <label class="v3d-toggle"><input type="checkbox" data-layer="truss" checked><span class="v3d-dot" style="background:#38bdf8"></span>โครงถัก / Truss</label>
-      <label class="v3d-toggle"><input type="checkbox" data-layer="purlin" checked><span class="v3d-dot" style="background:#f97316"></span>แป / Purlin</label>
-      <label class="v3d-toggle"><input type="checkbox" data-layer="rafter" checked><span class="v3d-dot" style="background:#10b981"></span>จันทัน / Rafter</label>
-      <label class="v3d-toggle"><input type="checkbox" data-layer="ground" checked><span class="v3d-dot" style="background:#475569"></span>พื้น/ตาราง</label>
-    </div>
-    <div class="v3d-hint">🖱️ Drag = หมุน • Scroll = ซูม • Right-click drag = แพน • Touch รองรับ</div>
+  <div class="redirect3dNote">
+    <p>ภาพ 3D ของหน้านี้ถูกยกเลิกแล้ว — ใช้โมเดล 3D ตัวใหม่ (ถูกต้องกว่า รองรับทุกรูปทรงหลังคา) ที่ปุ่ม<br>    <b>"โมเดล 3D (ใหม่)"</b> มุมบนซ้ายของหน้าจอแทน</p>
   </div>
 </div>
 </div>
@@ -4672,7 +4652,6 @@ updateAll();updateRafterCarried();
 </script>
 
 <script>
-  // เชื่อม Supabase auth gate เข้ากับ #login-page/#main-app เดิมของ index_v2
   (function(){
     var lp = document.getElementById('login-page');
     if (lp) lp.style.display = 'none';
@@ -4685,7 +4664,6 @@ updateAll();updateRafterCarried();
     syncMainApp();
   })();
 
-  // ---- mode switcher: ระบบเดิม (2D, index_v2) <-> โมเดล 3D (ใหม่, จาก warehouse_roof_v2) ----
   (function(){
     function setMode(m){
       document.body.classList.toggle('mode-old', m === 'old');
@@ -4694,9 +4672,6 @@ updateAll();updateRafterCarried();
         b.classList.toggle('active', b.dataset.mode === m);
       });
       if (m === 'new') {
-        // syncRendererSize()/frameCamera() are scoped inside the app's own IIFE (not on window) —
-        // it already listens for window 'resize' itself, so dispatch one now that #app is visible
-        // and has real dimensions (it was 0x0 while display:none during the renderer's first setSize call).
         setTimeout(function(){ window.dispatchEvent(new Event('resize')); }, 50);
       }
     }
