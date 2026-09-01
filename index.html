@@ -2304,7 +2304,7 @@ function makeTrussCardSVG(type){
 
 // รูปทรงอาคาร (หน้าแป) -> ประเภทโครงถักที่ใช้ได้จริงกับรูปทรงนั้น (หน้าโครงถัก)
 // ให้ 2 หน้านี้สอดคล้องกันเสมอ: เปลี่ยนรูปทรงแล้วการ์ดโครงถักที่ไม่เกี่ยวข้องจะถูกซ่อน
-const SHAPE_TRUSS_ALLOW={gable:['gable','gable_mono'],mono:['mono','carport'],flat:['flat']};
+const SHAPE_TRUSS_ALLOW={gable:['gable','gable_mono'],mono:['mono','carport'],flat:['flat','carport']};
 function buildTrussCards(){
   const types=[
     {id:'gable',name:'โครงถักจั่ว',sub:'สมมาตร'},
