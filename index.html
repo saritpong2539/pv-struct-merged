@@ -436,6 +436,9 @@
     padding:40px 20px; text-align:center; color:var(--color-text-secondary,#8fa0b3);
     font-size:14px; line-height:1.8; border:1px dashed var(--color-border-tertiary,#26323f); border-radius:12px;
   }
+  /* ซ่อนแท็บ "ข้อมูล/ตั้งค่า" ของเว็บใหม่ในระบบผสมนี้ — กรอกข้อมูลที่ระบบเดิมแทน (sync สดมาให้อยู่แล้ว)
+     คง element ทั้งหมดไว้ใน DOM (แค่ซ่อนปุ่ม) เพราะโค้ดภายใน + กลไก sync ยังต้องใช้ element เหล่านี้อยู่ */
+  #tabBtnData{ display:none !important; }
 </style>
 </head>
 <body class="authPending">
@@ -4687,7 +4690,8 @@ updateAll();updateRafterCarried();
 
   /* ============ Real-time sync: ระบบเดิม (index_v2) → โมเดล 3D ใหม่ (ทางเดียว) ============
      หลักการ: "ตั้งค่าฟิลด์ของเว็บใหม่ + จำลองคลิก/พิมพ์จริง" (ไม่แตะ internal state ของเว็บใหม่ที่ IIFE
-     ปิดไว้อยู่แล้ว) เพื่อให้ event listener เดิมของเว็บใหม่ทำงานตามปกติทุกอย่าง (validate, scheduleRebuild ฯลฯ) */
+     ปิดไว้อยู่แล้ว) เพื่อให้ event listener เดิมของเว็บใหม่ทำงานตามปกติทุกอย่าง (validate, scheduleRebuild ฯลฯ)
+     — element ของแท็บ "ข้อมูล/ตั้งค่า" ยังอยู่ใน DOM เสมอ (แค่ซ่อนปุ่มแท็บ) เพื่อให้กลไกนี้ยังทำงานได้ */
   (function(){
     function setNewVal(id, val){
       var el = document.getElementById(id);
@@ -4713,10 +4717,9 @@ updateAll();updateRafterCarried();
     }
     function clickCatThenSize(catFieldSel, gridId, cat, idx){
       clickPill(catFieldSel, cat);
-      setTimeout(function(){ clickSizeIdx(gridId, idx); }, 60); // รอ size grid re-render ใหม่ตามหมวดหมู่ก่อน
+      setTimeout(function(){ clickSizeIdx(gridId, idx); }, 60);
     }
 
-    // ---- ข้อมูลร่วม ----
     function syncShared(){
       var w = document.getElementById('bldg-width'), l = document.getElementById('bldg-len');
       var peak = document.getElementById('roof-peak'), edge = document.getElementById('roof-edge');
@@ -4757,7 +4760,6 @@ updateAll();updateRafterCarried();
       window.setTerrain = function(t){ _setTerrain(t); clickPill('[data-field="windTerrain"]', t); };
     }
 
-    // ---- แป ----
     if (typeof window.setSag === 'function') {
       var _setSag = window.setSag;
       window.setSag = function(v){ _setSag(v); clickPill('[data-field="sagRod"]', v); };
@@ -4767,7 +4769,7 @@ updateAll();updateRafterCarried();
 
     function syncPurlinSize(){
       var typeHot = document.getElementById('type-hot');
-      if (!typeHot || !typeHot.classList.contains('active')) return; // sync ได้แค่ประเภท "เหล็กรูปพรรณ มอก." (มีตารางตรงกับเว็บใหม่)
+      if (!typeHot || !typeHot.classList.contains('active')) return;
       var catSel = document.getElementById('hot-cat'), sizeSel = document.getElementById('hot-section');
       if (!catSel || !sizeSel) return;
       var CAT_MAP = { c: 'cchannel', rhs: 'rhs', shs: 'shs' };
@@ -4778,7 +4780,6 @@ updateAll();updateRafterCarried();
       if (el) el.addEventListener('change', function(){ setTimeout(syncPurlinSize, 80); });
     });
 
-    // ---- จันทัน ----
     if (typeof window.setRType === 'function') {
       var _setRType = window.setRType;
       window.setRType = function(t){ _setRType(t); clickPill('[data-field="rafterSectionType"]', t === 'dc' ? '2c' : 'hotrolled'); };
@@ -4794,7 +4795,6 @@ updateAll();updateRafterCarried();
       if (el) el.addEventListener('change', function(){ setTimeout(syncRafterSize, 80); });
     });
 
-    // ---- โครงถัก ----
     var tHeightEl = document.getElementById('t-height'), tPanelsEl = document.getElementById('t-panels');
     if (tHeightEl) tHeightEl.addEventListener('input', function(){ setNewVal('pTrussDepth', tHeightEl.value); });
     if (tPanelsEl) tPanelsEl.addEventListener('input', function(){ setNewVal('pPanels', tPanelsEl.value); });
@@ -4811,12 +4811,11 @@ updateAll();updateRafterCarried();
         if (type === 'diag') clickPill('[data-field="diagonalDir"]', DIAG_MAP[val] || 'left');
       };
     }
-    // ตงบน/ตงล่าง/ค้ำยัน (m-cat-tc/bc/web, m-size-tc/bc/web) — สร้างแบบไดนามิก ใช้ event delegation
     var TSEC_CAT_MAP = { rhs:'rhs', shs:'shs', angle:'angle', dangle:'dangle', ibeam:'ibeam', hbeam:'hbeam', wf:'wf', cutbeam:'cutbeam' };
     var TC_ROLE_MAP = { tc: 'topChord', bc: 'bottomChord', web: 'web' };
     function syncTrussMemberSize(mid){
       var role = TC_ROLE_MAP[mid];
-      if (!role) return; // 'diag' ใช้ค่าเดียวกับ web อยู่แล้วในเว็บใหม่ ไม่ต้อง sync แยก
+      if (!role) return;
       var catSel = document.getElementById('m-cat-' + mid), sizeSel = document.getElementById('m-size-' + mid);
       if (!catSel || !sizeSel) return;
       clickCatThenSize('[data-field="' + role + 'Cat"]', role + 'SizeGrid', TSEC_CAT_MAP[catSel.value] || 'rhs', sizeSel.selectedIndex);
