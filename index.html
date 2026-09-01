@@ -2302,6 +2302,9 @@ function makeTrussCardSVG(type){
   return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"></svg>`;
 }
 
+// รูปทรงอาคาร (หน้าแป) -> ประเภทโครงถักที่ใช้ได้จริงกับรูปทรงนั้น (หน้าโครงถัก)
+// ให้ 2 หน้านี้สอดคล้องกันเสมอ: เปลี่ยนรูปทรงแล้วการ์ดโครงถักที่ไม่เกี่ยวข้องจะถูกซ่อน
+const SHAPE_TRUSS_ALLOW={gable:['gable','gable_mono'],mono:['mono','carport'],flat:['flat']};
 function buildTrussCards(){
   const types=[
     {id:'gable',name:'โครงถักจั่ว',sub:'สมมาตร'},
@@ -2310,9 +2313,12 @@ function buildTrussCards(){
     {id:'mono',name:'โครงถักแนวเอียง',sub:'Chord เอียงตามหลังคา'},
     {id:'carport',name:'โครงถักยื่น',sub:'Cantilever carport'},
   ];
+  const allowed=SHAPE_TRUSS_ALLOW[buildingShape]||types.map(t=>t.id);
+  if(!allowed.includes(trussType)) selTruss(allowed[0]); // ประเภทที่เลือกไว้ไม่ตรงกับรูปทรงใหม่แล้ว -> เปลี่ยนให้อัตโนมัติ
   const grid=document.getElementById('truss-card-grid');grid.innerHTML='';
   types.forEach(t=>{
     const div=document.createElement('div');div.className='truss-card'+(trussType===t.id?' active':'');
+    div.style.display=allowed.includes(t.id)?'':'none';
     div.id='tc-'+t.id;div.onclick=()=>selTruss(t.id);
     div.innerHTML=makeTrussCardSVG(t.id)+`<div class="truss-name">${t.name}</div><div class="truss-sub">${t.sub}</div>`;
     grid.appendChild(div);
@@ -4728,16 +4734,12 @@ updateAll();updateRafterCarried();
       if (el) el.addEventListener('input', syncShared);
     });
 
-    // แต่ละรูปทรงของเว็บเก่า -> (shapeCard ของเว็บใหม่, trussTypeCard ที่ตรงความหมายจริง)
-    // เว็บใหม่แยก "shape" (mono/gable) ออกจาก "trussType" (gable/gable_sloped/flat/inclined/cantilever) เป็นคนละสเต็ป
-    // ถ้าคลิกแค่ shape เฉยๆ มันจะ auto-select ตัวแรกในรายการที่กรองไว้ (mono -> 'flat' ซึ่งเป็นคานราบ ไม่เอียง!)
-    // ต้องคลิก trussType ที่ถูกต้องต่อเองเสมอ ไม่งั้นโมเดลจะดูแบนราบผิดจากที่เลือกในระบบเดิม
     var SHAPE_TRUSS_MAP = {
-      mono:       { shape: 'mono',  truss: 'inclined' },   // เพิงแหงน = ทางลาดเอียงทางเดียว
-      flat:       { shape: 'mono',  truss: 'flat' },       // หลังคาแบนจริง (rise=0 อยู่แล้วในเว็บเก่า)
-      carport:    { shape: 'mono',  truss: 'cantilever' }, // ยื่น
-      gable:      { shape: 'gable', truss: 'gable' },      // จั่วสมมาตร
-      gable_mono: { shape: 'gable', truss: 'gable_sloped' } // จั่วแนวเอียง
+      mono:       { shape: 'mono',  truss: 'inclined' },
+      flat:       { shape: 'mono',  truss: 'flat' },
+      carport:    { shape: 'mono',  truss: 'cantilever' },
+      gable:      { shape: 'gable', truss: 'gable' },
+      gable_mono: { shape: 'gable', truss: 'gable_sloped' }
     };
     function clickShape(oldShape){
       var m = SHAPE_TRUSS_MAP[oldShape] || SHAPE_TRUSS_MAP.mono;
@@ -4746,7 +4748,7 @@ updateAll();updateRafterCarried();
       setTimeout(function(){
         var trussBtn = document.querySelector('.trussTypeCard[data-truss="' + m.truss + '"]');
         if (trussBtn && !trussBtn.classList.contains('selected')) trussBtn.click();
-      }, 80); // รอ applyTrussShapeFilter() ของเว็บใหม่กรอง/auto-select ตัวแรกให้เสร็จก่อน แล้วค่อยเปลี่ยนทับ
+      }, 80);
     }
     if (typeof window.setShape === 'function') {
       var _setShape = window.setShape;
