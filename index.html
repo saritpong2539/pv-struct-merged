@@ -429,6 +429,7 @@
   }
   #sharedTopBar button.active{ background:var(--accent-dim,#2e4a70); border-color:var(--accent,#4f8ff0); color:var(--text,#e7edf3); }
   body.authPending #sharedTopBar{ display:none !important; }
+  body.mode-old #sharedTopBar{ display:none !important; } /* ระบบเดิมมีแท็บ "โมเดล 3D (ใหม่)" อยู่แถวเดียวกับ แป/จันทัน/โครงถักแล้ว ไม่ต้องมีแถบนี้ซ้ำ */
   body.mode-old #app{ display:none !important; }
   body.mode-new #oldAppWrap{ display:none !important; }
   body.mode-new #app{ height:calc(100vh - 49px) !important; }
@@ -445,7 +446,6 @@
 <div id="sharedTopBar">
   <span class="stbLabel">PV Struct Advanced —</span>
   <button type="button" data-mode="old" class="active">ระบบเดิม (แป / จันทัน / โครงถัก)</button>
-  <button type="button" data-mode="new">โมเดล 3D (ใหม่)</button>
 </div>
 <div id="authGate">
   <div class="authSheet">
@@ -1776,7 +1776,7 @@ html,body{margin:0;padding:0;background:#09101f;color:#eef2fa;min-height:100%;ov
   <button class="tab active" onclick="switchTab('purlin')">แป</button>
   <button class="tab" onclick="switchTab('rafter')">จันทัน</button>
   <button class="tab" onclick="switchTab('truss')">โครงถัก</button>
-  <button class="tab" onclick="switchTab('model3d')">ภาพ 3D</button>
+  <button class="tab" type="button" data-mode="new">โมเดล 3D (ใหม่)</button>
 </div>
 
 <!-- ===== PURLIN ===== -->
@@ -2097,7 +2097,7 @@ html,body{margin:0;padding:0;background:#09101f;color:#eef2fa;min-height:100%;ov
 <!-- 3D -->
 <div id="panel-model3d" class="panel">
   <div class="redirect3dNote">
-    <p>ภาพ 3D ของหน้านี้ถูกยกเลิกแล้ว — ใช้โมเดล 3D ตัวใหม่ (ถูกต้องกว่า รองรับทุกรูปทรงหลังคา อัปเดตสดจากฟอร์มนี้อัตโนมัติ) ที่แถบด้านบนสุดแทน</p>
+    <p>ภาพ 3D ของหน้านี้ถูกยกเลิกแล้ว — ใช้โมเดล 3D ตัวใหม่ (ถูกต้องกว่า รองรับทุกรูปทรงหลังคา อัปเดตสดจากฟอร์มนี้อัตโนมัติ) ที่แท็บ "โมเดล 3D (ใหม่)" แถวเดียวกับแป/จันทัน/โครงถักแทน</p>
   </div>
 </div>
 </div>
@@ -4680,14 +4680,14 @@ updateAll();updateRafterCarried();
     function setMode(m){
       document.body.classList.toggle('mode-old', m === 'old');
       document.body.classList.toggle('mode-new', m === 'new');
-      document.querySelectorAll('#sharedTopBar button[data-mode]').forEach(function(b){
+      document.querySelectorAll('button[data-mode]').forEach(function(b){
         b.classList.toggle('active', b.dataset.mode === m);
       });
       if (m === 'new') {
         setTimeout(function(){ window.dispatchEvent(new Event('resize')); }, 50);
       }
     }
-    document.querySelectorAll('#sharedTopBar button[data-mode]').forEach(function(b){
+    document.querySelectorAll('button[data-mode]').forEach(function(b){
       b.addEventListener('click', function(){ setMode(b.dataset.mode); });
     });
     setMode('old');
