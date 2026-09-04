@@ -793,10 +793,19 @@
         <div class="dataSection">
           <div class="field">
             <label>ประเภทแป</label>
-            <div class="pillRow" data-field="purlinType">
-              <button type="button" class="pillBtn active" data-value="hotrolled">เหล็กรูปพรรณ มอก.</button>
-              <button type="button" class="pillBtn" data-value="zpurlin">เหล็ก Z</button>
-              <button type="button" class="pillBtn" data-value="prefab">แปสำเร็จ</button>
+            <div class="miniIconGrid" data-field="purlinType">
+              <div class="miniIconCard active" data-value="hotrolled">
+                <svg viewBox="0 0 100 60"><path d="M30,10 H70 M50,10 V50 M30,50 H70" fill="none" stroke="#4f8ff0" stroke-width="6" stroke-linecap="round"/></svg>
+                <div class="micLabel">เหล็กรูปพรรณ มอก.</div><div class="micSub">C / RHS / SHS</div>
+              </div>
+              <div class="miniIconCard" data-value="zpurlin">
+                <svg viewBox="0 0 100 60"><path d="M25,12 H75 M75,12 L25,48 M25,48 H75" fill="none" stroke="#4f8ff0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div class="micLabel">เหล็ก Z</div><div class="micSub">หน้าตัด Z</div>
+              </div>
+              <div class="miniIconCard" data-value="prefab">
+                <svg viewBox="0 0 100 60"><path d="M70,18 V10 H35 V50 H70 V42" fill="none" stroke="#4f8ff0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div class="micLabel">แปสำเร็จ</div><div class="micSub">C มีปีก (lipped)</div>
+              </div>
             </div>
           </div>
           <div class="field">
@@ -872,9 +881,15 @@
 
           <div class="field">
             <label>ประเภทหน้าตัด</label>
-            <div class="pillRow" data-field="rafterSectionType">
-              <button type="button" class="pillBtn active" data-value="hotrolled">เหล็กรูปพรรณ มอก.</button>
-              <button type="button" class="pillBtn" data-value="2c">C Channel ประกบ (2C)</button>
+            <div class="miniIconGrid" data-field="rafterSectionType">
+              <div class="miniIconCard active" data-value="hotrolled">
+                <svg viewBox="0 0 100 60"><path d="M30,10 H70 M50,10 V50 M30,50 H70" fill="none" stroke="#4f8ff0" stroke-width="6" stroke-linecap="round"/></svg>
+                <div class="micLabel">เหล็กรูปพรรณ มอก.</div><div class="micSub">C / RHS / SHS</div>
+              </div>
+              <div class="miniIconCard" data-value="2c">
+                <svg viewBox="0 0 100 60"><path d="M25,10 H75 M46,10 V50 M54,10 V50 M25,50 H75" fill="none" stroke="#4f8ff0" stroke-width="5" stroke-linecap="round"/></svg>
+                <div class="micLabel">C Channel ประกบ (2C)</div><div class="micSub">เชื่อมประกบคู่</div>
+              </div>
             </div>
           </div>
           <div class="field">
