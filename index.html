@@ -3277,7 +3277,6 @@ updateAll();updateRafterCarried();
   };
   var DEFAULT_PARAMS = Object.assign({}, params); // เก็บไว้ให้ปุ่ม "รีเซ็ตเป็นค่าเริ่มต้น"
   var TRUSS_TYPES_WITH_RIDGE = { gable:true, gable_sloped:true, inclined:true }; // ใช้ความสูงสันหลังคา (rise) จริง
-  var TRUSS_TYPES_WITH_SOLAR_ROOF = { gable:true, gable_sloped:true }; // มีผิวหลังคาลาดสองฝั่งให้วางแผงโซล่าตามแบบเดิม
   var includeSolar = false; // toggle: false = แสดงผลด้วยโหลดเดิมอย่างเดียว, true = โหลดเดิม+โซล่า
 
   // กลุ่มชิ้นส่วนสำหรับ checklist/ตารางข้อมูล: แป / จันทัน / โครงถัก (ตงบน+ตงล่าง+ค้ำยัน)
@@ -3384,44 +3383,67 @@ updateAll();updateRafterCarried();
     return new THREE.Quaternion().setFromRotationMatrix(m);
   }
 
-  // วางแผงโซล่าเซลเต็มพื้นที่หลังคาทั้งสองฝั่ง (เว้นขอบสัน/ชายคา/ปลายจั่วเล็กน้อย)
+  // วางแผงโซล่าเซลเต็มพื้นที่หลังคา (เว้นขอบสัน/ชายคา/ปลายจั่วเล็กน้อย)
+  // จั่ว/จั่วแนวเอียง: 2 ผืนลาดสองฝั่งจากสัน — แนวราบ/ยื่น: 1 ผืนแบนราบ — แนวเอียง: 1 ผืนลาดทางเดียว
+  function solarRoofSides(p){
+    var halfSpan = p.span/2;
+    if(p.trussType==='gable' || p.trussType==='gable_sloped'){
+      var Lslope = Math.sqrt(halfSpan*halfSpan + p.rise*p.rise);
+      var ridge = new THREE.Vector3(0, p.eave + p.rise, 0);
+      return [
+        { origin:ridge, dir:new THREE.Vector3( halfSpan, -p.rise, 0).normalize(), normal:new THREE.Vector3(p.rise,  halfSpan, 0).normalize(), len:Lslope },
+        { origin:ridge, dir:new THREE.Vector3(-halfSpan, -p.rise, 0).normalize(), normal:new THREE.Vector3(-p.rise, halfSpan, 0).normalize(), len:Lslope }
+      ];
+    }
+    if(p.trussType==='flat'){
+      var yFlat = p.eave + p.trussDepth;
+      return [ { origin:new THREE.Vector3(-halfSpan, yFlat, 0), dir:new THREE.Vector3(1,0,0), normal:new THREE.Vector3(0,1,0), len:p.span } ];
+    }
+    if(p.trussType==='cantilever'){
+      var yCant = p.eave + p.trussDepth;
+      return [ { origin:new THREE.Vector3(0, yCant, 0), dir:new THREE.Vector3(1,0,0), normal:new THREE.Vector3(0,1,0), len:p.span } ];
+    }
+    if(p.trussType==='inclined'){
+      var y0 = p.eave + p.trussDepth;
+      var dv = new THREE.Vector3(p.span, p.rise, 0);
+      var Linc = dv.length();
+      return [ { origin:new THREE.Vector3(-halfSpan, y0, 0), dir:dv.clone().normalize(), normal:new THREE.Vector3(-p.rise, p.span, 0).normalize(), len:Linc } ];
+    }
+    return [];
+  }
+
   function buildSolarPanels(p){
     while(solarGroup.children.length) solarGroup.remove(solarGroup.children[0]);
     totalPanelCount = 0;
-    // การวางแผงเต็มผิวหลังคาลาดสองฝั่งแบบนี้ใช้ได้เฉพาะจั่ว/จั่วแนวเอียง (มีสันหลังคาจริง)
-    // แบบแนวราบ/แนวเอียง/ยื่น ยังไม่รองรับการวางแผงอัตโนมัติ — รอพัฒนาเฟสถัดไป
-    if(!TRUSS_TYPES_WITH_SOLAR_ROOF[p.trussType]) return;
 
-    var halfSpan = p.span/2;
-    var Lslope = Math.sqrt(halfSpan*halfSpan + p.rise*p.rise);
     var margin = 0.25;
     var pitchX = 1.02, pitchZ = 1.68;
     var drawX = 0.97, drawZ = 1.62, thickness = 0.035;
-    var nSlope = Math.max(0, Math.floor((Lslope - margin*2) / pitchX));
+
+    var sides = solarRoofSides(p);
     var nLen = Math.max(0, Math.floor((p.length - margin*2) / pitchZ));
-    if(nSlope<=0 || nLen<=0) return;
+    if(!sides.length || nLen<=0) return;
+
+    var perSideN = sides.map(function(side){ return Math.max(0, Math.floor((side.len - margin*2) / pitchX)); });
+    var count = perSideN.reduce(function(sum,n){ return sum + n*nLen; }, 0);
+    if(count<=0) return;
 
     var geo = new THREE.BoxGeometry(drawX, thickness, drawZ);
     var frameMat = new THREE.MeshStandardMaterial({ color:0x717c8a, roughness:0.5, metalness:0.5 });
     var topMat = new THREE.MeshStandardMaterial({ map: panelTexture, color:0xffffff, roughness:0.35, metalness:0.15 });
     var mats = [frameMat, frameMat, topMat, frameMat, frameMat, frameMat];
 
-    var count = nSlope * nLen * 2;
     var inst = new THREE.InstancedMesh(geo, mats, count);
-
-    var sides = [
-      { normal:new THREE.Vector3(p.rise,  halfSpan, 0).normalize(), dir:new THREE.Vector3( halfSpan, -p.rise, 0).normalize() },
-      { normal:new THREE.Vector3(-p.rise, halfSpan, 0).normalize(), dir:new THREE.Vector3(-halfSpan, -p.rise, 0).normalize() }
-    ];
-    var ridge = new THREE.Vector3(0, p.eave + p.rise, 0);
     var dummy = new THREE.Object3D();
     var idx = 0;
 
-    sides.forEach(function(side){
+    sides.forEach(function(side, si){
+      var nSlope = perSideN[si];
+      if(nSlope<=0) return;
       var q = panelQuaternion(side.normal);
       for(var i=0;i<nSlope;i++){
         var t = margin + i*pitchX + pitchX/2;
-        var basePos = ridge.clone().add(side.dir.clone().multiplyScalar(t));
+        var basePos = side.origin.clone().add(side.dir.clone().multiplyScalar(t));
         for(var j=0;j<nLen;j++){
           var pos = basePos.clone();
           pos.z = -p.length/2 + margin + j*pitchZ + pitchZ/2;
@@ -3435,7 +3457,7 @@ updateAll();updateRafterCarried();
       }
     });
     inst.instanceMatrix.needsUpdate = true;
-    totalPanelCount = count;
+    totalPanelCount = idx;
     solarGroup.add(inst);
     solarGroup.visible = includeSolar;
   }
