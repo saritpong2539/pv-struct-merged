@@ -545,6 +545,7 @@
         <div class="row solarLine"><span id="solarStatusLabel">โหมดปัจจุบัน</span><span class="count" id="solarStatusVal">โหลดเดิม</span></div>
         <div class="row solarLine"><span>ติดโซล่าได้ (util &lt;70%)</span><span class="count" id="cntSolarOk">0</span></div>
         <div class="row solarLine"><span>แผงโซล่าเต็มพื้นที่หลังคา</span><span class="count" id="cntPanels">0</span></div>
+        <div class="row solarLine"><span>กำลังไฟรวม (ตามขนาดแผงที่ตั้ง)</span><span class="count" id="cntKwp">0 kWp</span></div>
       </div>
 
       <div id="hint">แตะชิ้นส่วนในโมเดล<br>เพื่อดู/แก้ไขข้อมูลด่วน · ลากเพื่อหมุน · บีบเพื่อซูม<br>แก้ไขละเอียดที่แท็บ "ข้อมูล/ตั้งค่า"</div>
@@ -682,6 +683,11 @@
           <label>Allowable Bending Stress Fb (กก./ซม²) — ค่าความแข็งแรงของวัสดุที่ยอมให้รับได้</label>
           <input type="number" id="pFb" value="1440" step="10">
           <div class="fieldHelp">ยิ่งค่าสูง วัสดุยิ่งแข็งแรง รับน้ำหนักได้มากขึ้นก่อนจะเป็นสีแดง (เกรดเหล็ก SS400 ทั่วไป ≈ 1440)</div>
+        </div>
+        <div class="field">
+          <label>กำลังไฟต่อแผง (วัตต์)</label>
+          <input type="number" id="pPanelWatt" value="550" step="5">
+          <div class="fieldHelp">ใช้แปลงจำนวนแผงที่วางเต็มพื้นที่หลังคาเป็นกำลังไฟรวมโดยประมาณ (kWp) เท่านั้น — ไม่กระทบการคำนวณโครงสร้าง ปรับตามสเปคแผงจริงที่จะใช้</div>
         </div>
 
         <div class="liveCalcBox" id="liveCalcBox">
@@ -3272,7 +3278,7 @@ updateAll();updateRafterCarried();
 
   var params = {
     span:20, length:30, eave:6, rise:4, bays:6, panels:5,
-    existingLoad:15, solarLoad:12, Fb:1440,
+    existingLoad:15, solarLoad:12, Fb:1440, panelWatt:550,
     trussType:'gable', trussDepth:0.6
   };
   var DEFAULT_PARAMS = Object.assign({}, params); // เก็บไว้ให้ปุ่ม "รีเซ็ตเป็นค่าเริ่มต้น"
@@ -4044,6 +4050,7 @@ updateAll();updateRafterCarried();
     document.getElementById('fcRafter').textContent = groupCount.rafter;
     document.getElementById('fcTruss').textContent = groupCount.truss;
     document.getElementById('cntPanels').textContent = totalPanelCount;
+    document.getElementById('cntKwp').textContent = (totalPanelCount * params.panelWatt / 1000).toFixed(1) + ' kWp';
     document.getElementById('dataModeNote').textContent = 'โหมดคำนวณ: ' + (includeSolar ? 'โหลดเดิม + โซล่า' : 'โหลดเดิมอย่างเดียว');
     updatePurlinFixBox();
     updateRafterFixBox();
@@ -4835,6 +4842,7 @@ updateAll();updateRafterCarried();
     params.existingLoad = Math.max(0, parseFloat(document.getElementById('pExistingLoad').value)||15);
     params.solarLoad = Math.max(0, parseFloat(document.getElementById('pSolarLoad').value)||12);
     params.Fb = Math.max(1, parseFloat(document.getElementById('pFb').value)||1440);
+    params.panelWatt = Math.max(1, parseFloat(document.getElementById('pPanelWatt').value)||550);
     rebuildScene();
     frameCamera();
     renderMemberTable();
@@ -4844,7 +4852,7 @@ updateAll();updateRafterCarried();
     if(rebuildTimer) clearTimeout(rebuildTimer);
     rebuildTimer = setTimeout(function(){ rebuildTimer = null; applySettingsFromFields(); }, 400);
   }
-  ['pSpan','pLength','pEave','pRise','pBays','pPanels','pTrussDepth','pExistingLoad','pSolarLoad','pFb'].forEach(function(id){
+  ['pSpan','pLength','pEave','pRise','pBays','pPanels','pTrussDepth','pExistingLoad','pSolarLoad','pFb','pPanelWatt'].forEach(function(id){
     document.getElementById(id).addEventListener('input', scheduleRebuild);
   });
 
@@ -4859,6 +4867,7 @@ updateAll();updateRafterCarried();
     document.getElementById('pExistingLoad').value = params.existingLoad;
     document.getElementById('pSolarLoad').value = params.solarLoad;
     document.getElementById('pFb').value = params.Fb;
+    document.getElementById('pPanelWatt').value = params.panelWatt;
     setTrussTypeSelection(params.trussType, true);
     applyTrussShapeFilter(true);
     updateSharedCalc();
