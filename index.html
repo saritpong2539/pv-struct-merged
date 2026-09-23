@@ -3423,6 +3423,7 @@ updateAll();updateRafterCarried();
     var sides = solarRoofSides(p);
     var nLen = Math.max(0, Math.floor((p.length - margin*2) / pitchZ));
     if(!sides.length || nLen<=0) return;
+    var startZ = -(nLen*pitchZ)/2; // จัดกึ่งกลางแนวยาว: พื้นที่เหลือจากปัดเศษแบ่งเท่ากันทั้งสองฝั่ง แทนที่จะกองไว้ปลายด้านเดียว
 
     var perSideN = sides.map(function(side){ return Math.max(0, Math.floor((side.len - margin*2) / pitchX)); });
     var count = perSideN.reduce(function(sum,n){ return sum + n*nLen; }, 0);
@@ -3440,13 +3441,14 @@ updateAll();updateRafterCarried();
     sides.forEach(function(side, si){
       var nSlope = perSideN[si];
       if(nSlope<=0) return;
+      var startT = (side.len - nSlope*pitchX)/2; // จัดกึ่งกลางแนวลาด เช่นเดียวกับแนวยาว
       var q = panelQuaternion(side.normal);
       for(var i=0;i<nSlope;i++){
-        var t = margin + i*pitchX + pitchX/2;
+        var t = startT + i*pitchX + pitchX/2;
         var basePos = side.origin.clone().add(side.dir.clone().multiplyScalar(t));
         for(var j=0;j<nLen;j++){
           var pos = basePos.clone();
-          pos.z = -p.length/2 + margin + j*pitchZ + pitchZ/2;
+          pos.z = startZ + j*pitchZ + pitchZ/2;
           pos.add(side.normal.clone().multiplyScalar(0.24)); // ยกเหนือจันทัน/แปเล็กน้อยกันซ้อนทับ
           dummy.position.copy(pos);
           dummy.quaternion.copy(q);
