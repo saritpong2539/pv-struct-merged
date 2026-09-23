@@ -1201,6 +1201,7 @@
 โหลดออกแบบ (แรงดัด/แรงเฉือนปกติ) = MAX(1, 2a)
 เช็คลมดูด (uplift) แยกต่างหาก = (2b) ต้องยังเป็นบวก (โครงสร้างไม่ปลิว)</div>
         <div class="fieldHelp">⚠️ <b>แก้จากต้นฉบับ:</b> เดิมเขียน "0.6DL+WL" เป็นบวกทั้งคู่ ไม่ชัดว่าเช็คลมดูดหรือไม่ — ของจริง WL ต้องมีเครื่องหมายตามทิศทาง (2b) มีไว้เช็คกรณีลมดูดขึ้นสวนน้ำหนักคงที่ที่ลดลงเหลือ 0.6DL โดยเฉพาะ เป็นตัวคุมสำคัญสำหรับหลังคาเบา (เมทัลชีต) ที่มักปลิวจากลมดูด ไม่ใช่ลมกด</div>
+        <div class="fieldHelp">📌 <b>หมายเหตุ:</b> (2b) ยังคำนวณและแสดงผลให้ดู (ป้าย "เช็คลมดูด" ใต้แต่ละชิ้นส่วน) แต่<b>ไม่นำมานับรวมเป็นเกณฑ์ผ่าน/ไม่ผ่าน</b>ของชิ้นส่วนอีกต่อไป — สีเขียว/เหลือง/แดงและ "ผ่าน/ไม่ผ่าน" อิงจากค่าแรงดัด/แรงเฉือน (fb/Fb) และการโก่งตัวเท่านั้น</div>
       </div>
 
       <div class="dataSection">
@@ -2512,7 +2513,7 @@ function doPurlinCalc(sec,sagM,isDouble){
   const Av=(sec.h/10)*(sec.tw/10)*sec.nw,Va=Fv*Av*mul;
   const Ix=sec.ix*mul,Lcm=L*100,defl=5*(wx/100)*Math.pow(Lcm,4)/(384*E_kgf*Ix),dlim=Lcm/120;
   const Ms=Mx/Mrx+My/Mry,Vr=Vx/Va;
-  return{L,s,theta,thetaDeg:geo.thetaDeg,w,Mx,My,Mrx,Mry,Vx,Va,Ms,Vr,defl,dlim,up,ok:Ms<=1&&Vr<=1&&defl<=dlim&&up.safe,co,DL,LL,WL,sw,geo};
+  return{L,s,theta,thetaDeg:geo.thetaDeg,w,Mx,My,Mrx,Mry,Vx,Va,Ms,Vr,defl,dlim,up,ok:Ms<=1&&Vr<=1&&defl<=dlim,co,DL,LL,WL,sw,geo};
 }
 
 /* ===== PURLIN CALC ===== */
@@ -2592,7 +2593,7 @@ function doRafterCalc(Lr,sr,mul,Zx,Ix,tw,h,wSelf,nWebs,p){
   const Mr=Fb*Zx*mul/100,Mx=wTot*Lr*Lr/8,Vx=wTot*Lr/2;
   const Av=(h/10)*(tw/10)*nWebs,Va=Fv*Av*mul;const Mstress=Mx/Mr,Vratio=Vx/Va;
   const Lcm=Lr*100,deflMax=5*(wTot/100)*Math.pow(Lcm,4)/(384*E_kgf*Ix*mul),deflLimit=Lcm/120,deflCheck=deflMax<=deflLimit;
-  return{co,wTot,Mr,Mx,Vx,Va,Mstress,Vratio,deflMax,deflLimit,deflCheck,up,mPass:Mstress<=1,vPass:Vratio<=1,pass:Mstress<=1&&Vratio<=1&&deflCheck&&up.safe,selfW};
+  return{co,wTot,Mr,Mx,Vx,Va,Mstress,Vratio,deflMax,deflLimit,deflCheck,up,mPass:Mstress<=1,vPass:Vratio<=1,pass:Mstress<=1&&Vratio<=1&&deflCheck,selfW};
 }
 function getRafterRawProps(){
   if(rafterType==='hot'){const cat=document.getElementById('r-hot-cat').value;const opt=getOpt('r-hot-section');return{Zx:+opt.dataset.zx,Ix:+opt.dataset.ix,tw:+opt.dataset.tw,h:+opt.dataset.h,wSelf:+opt.dataset.wt,secLabel:opt.textContent,nWebs:cat==='c'?1:2,is2C:false};}
@@ -2834,7 +2835,7 @@ function calcTruss(){
   }
   const Pr_tc=memberPa(tcP,panelLen),Pr_bc=memberPa(bcP,panelLen),Pr_web=memberPa(wbP,webLen),Pr_diag=diagPat==='no'?0:memberPa(dgP,diagLen);
   const r_tc=F_TC/Pr_tc,r_bc=F_BC/Pr_bc,r_web=F_web/Pr_web,r_diag=diagPat==='no'?0:F_diag/Pr_diag;
-  const maxR=Math.max(r_tc,r_bc,r_web,r_diag),passStress=maxR<=1,pass=passStress&&up.safe;
+  const maxR=Math.max(r_tc,r_bc,r_web,r_diag),passStress=maxR<=1,pass=passStress;
 
   const colText=nCols>0?` | เสากลาง ${nCols} ต้น (ช่วงสุทธิ ${rd(effSpan,2)} m)`:'';
   const typeNames={gable:'จั่ว',gable_mono:'จั่วแนวเอียง',flat:'แนวราบ',mono:'แนวเอียง',carport:'ยื่น'};
@@ -2851,7 +2852,7 @@ function calcTruss(){
   setRow('tr-row-web','tr-chk-web',r_web<=1,false);setRow('tr-row-diag','tr-chk-diag',r_diag<=1,diagPat==='no');
   setRow('tr-row-tcr','tr-chk-tcr',r_tc<=1,false);setRow('tr-row-bcr','tr-chk-bcr',r_bc<=1,false);
   setRow('tr-row-uplift','tr-chk-uplift',up.safe,false);
-  const failMsgs=[];if(r_tc>1)failMsgs.push('TC='+r3(r_tc));if(r_bc>1)failMsgs.push('BC='+r3(r_bc));if(r_web>1)failMsgs.push('Web='+r3(r_web));if(r_diag>1)failMsgs.push('Diag='+r3(r_diag));if(!up.safe)failMsgs.push('Uplift net='+rd(up.net,1));
+  const failMsgs=[];if(r_tc>1)failMsgs.push('TC='+r3(r_tc));if(r_bc>1)failMsgs.push('BC='+r3(r_bc));if(r_web>1)failMsgs.push('Web='+r3(r_web));if(r_diag>1)failMsgs.push('Diag='+r3(r_diag));
   showVerdict('t-verdict','t-v-icon','t-v-text','t-v-sub',pass,'ผ่าน — โครงถักรับน้ำหนักได้','ไม่ผ่าน',pass?'Max ratio='+r3(maxR):failMsgs.join(' | '));
   document.getElementById('truss-result').classList.remove('hidden');
   lastTrussCalc={type:typeNames[trussType]+colText,span:rd(span,1),ht:rd(ht,2),panels,spacing:rd(spacing,1),nCols,effSpan:rd(effSpan,2),tcSec:getTSecProps('tc').label,bcSec:getTSecProps('bc').label,webSec:getTSecProps('web').label,diagSec:diagPat==='no'?'-':getTSecProps('diag').label,r_tc,r_bc,r_web,r_diag,maxR,pass,loadPm2};
@@ -3893,25 +3894,25 @@ updateAll();updateRafterCarried();
   function utilizationOf(d){
     if(d.type === 'purlin' && typeof selectedPurlinSection !== 'undefined'){
       var rp = computePurlin(d);
-      return { fb: rp.pct/100*params.Fb, Fb: params.Fb, pct: rp.pct, defl:rp.defl, dlim:rp.dlim, deflOk:rp.deflOk, upliftSafe: getPurlinUplift().safe };
+      return { fb: rp.pct/100*params.Fb, Fb: params.Fb, pct: rp.pct, defl:rp.defl, dlim:rp.dlim, deflOk:rp.deflOk };
     }
     if(d.type === 'rafter' && typeof selectedRafterSection !== 'undefined'){
       var rr = computeRafter(d);
-      return { fb: rr.pct/100*params.Fb, Fb: params.Fb, pct: rr.pct, defl:rr.defl, dlim:rr.dlim, deflOk:rr.deflOk, upliftSafe: getRafterUplift().safe };
+      return { fb: rr.pct/100*params.Fb, Fb: params.Fb, pct: rr.pct, defl:rr.defl, dlim:rr.dlim, deflOk:rr.deflOk };
     }
     if((d.type === 'topChord' || d.type === 'bottomChord' || d.type === 'web') && typeof selectedTopChordSection !== 'undefined'){
       var rt = computeTrussMember(d);
-      return { fb: rt.pct/100*params.Fb, Fb: params.Fb, pct: rt.pct, upliftSafe: getTrussUplift().safe };
+      return { fb: rt.pct/100*params.Fb, Fb: params.Fb, pct: rt.pct };
     }
     var fb = computeFb(d);
     var pct = (fb / params.Fb) * 100;
     return { fb:fb, Fb:params.Fb, pct:pct };
   }
-  // รับได้ทั้งตัวเลข pct เดิม หรือ object จาก utilizationOf() (เพื่อรวมเช็คโก่งตัว/ลมดูดเข้าไปในสีด้วย — ให้ตรงกับกล่อง "ผลรวม")
+  // รับได้ทั้งตัวเลข pct เดิม หรือ object จาก utilizationOf() (เพื่อรวมเช็คโก่งตัวเข้าไปในสีด้วย — ให้ตรงกับกล่อง "ผลรวม")
+  // หมายเหตุ: เช็คลมดูด (uplift) แสดงเป็นข้อมูลแยกต่างหาก (renderUpliftBadge) ไม่นำมานับรวมในผ่าน/ไม่ผ่านแล้ว ตามคำขอผู้ใช้
   function memberFails(u){
     if(u.pct >= THRESH.red) return true;
     if(u.deflOk === false) return true;
-    if(u.upliftSafe === false) return true;
     return false;
   }
   function statusColor(u){
@@ -4634,8 +4635,8 @@ updateAll();updateRafterCarried();
       if(dr > worstDeflRatio){ worstDeflRatio = dr; worstDefl = u.defl; worstDlim = u.dlim; }
     });
     var deflOk = worstDeflRatio <= 1;
-    var uplift = getPurlinUplift();
-    var fail = worst >= 100 || !deflOk || !uplift.safe;
+    var uplift = getPurlinUplift(); // แสดงผลเป็นข้อมูลเท่านั้น ไม่นับรวมในผ่าน/ไม่ผ่าน
+    var fail = worst >= 100 || !deflOk;
     var el = document.getElementById('purlinResultRatio');
     var vEl = document.getElementById('purlinResultVerdict');
     var boxEl = document.getElementById('purlinFixBox');
@@ -4660,8 +4661,8 @@ updateAll();updateRafterCarried();
       if(dr > worstDeflRatio){ worstDeflRatio = dr; worstDefl = u.defl; worstDlim = u.dlim; }
     });
     var deflOk = worstDeflRatio <= 1;
-    var uplift = getRafterUplift();
-    var fail = worst >= 100 || !deflOk || !uplift.safe;
+    var uplift = getRafterUplift(); // แสดงผลเป็นข้อมูลเท่านั้น ไม่นับรวมในผ่าน/ไม่ผ่าน
+    var fail = worst >= 100 || !deflOk;
     var el = document.getElementById('rafterResultRatio');
     var vEl = document.getElementById('rafterResultVerdict');
     var boxEl = document.getElementById('rafterFixBox');
@@ -4683,8 +4684,8 @@ updateAll();updateRafterCarried();
       var u = utilizationOf(d);
       if(u.pct > worst) worst = u.pct;
     });
-    var uplift = getTrussUplift();
-    var fail = worst >= 100 || !uplift.safe;
+    var uplift = getTrussUplift(); // แสดงผลเป็นข้อมูลเท่านั้น ไม่นับรวมในผ่าน/ไม่ผ่าน
+    var fail = worst >= 100;
     var el = document.getElementById('trussResultRatio');
     var vEl = document.getElementById('trussResultVerdict');
     var boxEl = document.getElementById('trussFixBox');
