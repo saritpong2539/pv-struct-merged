@@ -854,7 +854,6 @@
           <div class="liveCalcBox" id="purlinResultBox">
             <div class="lcItem"><div class="lcLabel">Stress Ratio สูงสุด</div><div class="lcVal" id="purlinResultRatio">–</div></div>
             <div class="lcItem"><div class="lcLabel">ผลรวม</div><div class="lcVal" id="purlinResultVerdict">–</div></div>
-            <div class="lcItem"><div class="lcLabel">เช็คลมดูด (Uplift, 0.6DL−WL)</div><div class="lcVal" id="purlinUpliftVal">–</div></div>
             <div class="lcItem"><div class="lcLabel">เช็คโก่งตัว (Deflection ≤ L/120)</div><div class="lcVal" id="purlinDeflVal">–</div></div>
           </div>
 
@@ -930,7 +929,6 @@
           <div class="liveCalcBox" id="rafterResultBox">
             <div class="lcItem"><div class="lcLabel">Stress Ratio สูงสุด</div><div class="lcVal" id="rafterResultRatio">–</div></div>
             <div class="lcItem"><div class="lcLabel">ผลรวม</div><div class="lcVal" id="rafterResultVerdict">–</div></div>
-            <div class="lcItem"><div class="lcLabel">เช็คลมดูด (Uplift, 0.6DL−WL)</div><div class="lcVal" id="rafterUpliftVal">–</div></div>
             <div class="lcItem"><div class="lcLabel">เช็คโก่งตัว (Deflection ≤ L/120)</div><div class="lcVal" id="rafterDeflVal">–</div></div>
           </div>
 
@@ -1142,7 +1140,6 @@
           <div class="liveCalcBox" id="trussResultBox">
             <div class="lcItem"><div class="lcLabel">Stress Ratio สูงสุด</div><div class="lcVal" id="trussResultRatio">–</div></div>
             <div class="lcItem"><div class="lcLabel">ผลรวม</div><div class="lcVal" id="trussResultVerdict">–</div></div>
-            <div class="lcItem"><div class="lcLabel">เช็คลมดูด (Uplift, 0.6DL−WL)</div><div class="lcVal" id="trussUpliftVal">–</div></div>
           </div>
           <div class="fixBox" id="trussFixBox" style="display:none;">
             <div class="groupLabel">⚠️ แนะนำการแก้ไข — โครงถักบางชิ้นเกินพิกัด</div>
@@ -1172,7 +1169,7 @@
     <div class="tabPanel" id="tabFormula">
       <div class="dataHead">
         <h1>สูตรคำนวณ</h1>
-        <div class="modeNote">เอกสารอ้างอิง (แก้ไขแล้วเป็น ASD ล้วน) — เชื่อมกับโมเดล 3D จริงแล้ว (แป/จันทัน/โครงถัก + เช็คลมดูด)</div>
+        <div class="modeNote">เอกสารอ้างอิง (แก้ไขแล้วเป็น ASD ล้วน) — เชื่อมกับโมเดล 3D จริงแล้ว (แป/จันทัน/โครงถัก)</div>
       </div>
 
       <div class="disclaimerBox">
@@ -1194,14 +1191,11 @@
       </div>
 
       <div class="dataSection">
-        <h2>Load Combination (ASD — ASCE7 §2.4) — ต้องเช็คทั้งกรณีลมกด และลมดูด</h2>
+        <h2>Load Combination (ASD — ASCE7 §2.4)</h2>
         <div class="formulaBox">(1)  DL + LL
 (2a) DL + 0.75×(LL + WL)      ← WL เป็น + (ลมกดลง)
-(2b) 0.6×DL − WL              ← WL เป็น − (ลมดูดขึ้น = uplift)
-โหลดออกแบบ (แรงดัด/แรงเฉือนปกติ) = MAX(1, 2a)
-เช็คลมดูด (uplift) แยกต่างหาก = (2b) ต้องยังเป็นบวก (โครงสร้างไม่ปลิว)</div>
-        <div class="fieldHelp">⚠️ <b>แก้จากต้นฉบับ:</b> เดิมเขียน "0.6DL+WL" เป็นบวกทั้งคู่ ไม่ชัดว่าเช็คลมดูดหรือไม่ — ของจริง WL ต้องมีเครื่องหมายตามทิศทาง (2b) มีไว้เช็คกรณีลมดูดขึ้นสวนน้ำหนักคงที่ที่ลดลงเหลือ 0.6DL โดยเฉพาะ เป็นตัวคุมสำคัญสำหรับหลังคาเบา (เมทัลชีต) ที่มักปลิวจากลมดูด ไม่ใช่ลมกด</div>
-        <div class="fieldHelp">📌 <b>หมายเหตุ:</b> (2b) ยังคำนวณและแสดงผลให้ดู (ป้าย "เช็คลมดูด" ใต้แต่ละชิ้นส่วน) แต่<b>ไม่นำมานับรวมเป็นเกณฑ์ผ่าน/ไม่ผ่าน</b>ของชิ้นส่วนอีกต่อไป — สีเขียว/เหลือง/แดงและ "ผ่าน/ไม่ผ่าน" อิงจากค่าแรงดัด/แรงเฉือน (fb/Fb) และการโก่งตัวเท่านั้น</div>
+โหลดออกแบบ (แรงดัด/แรงเฉือน) = MAX(1, 2a)</div>
+        <div class="fieldHelp">📌 <b>หมายเหตุ:</b> เดิมมีเช็คลมดูด (uplift, combo 2b: 0.6DL−WL≥0) แยกต่างหากด้วย — เอาออกตามคำขอผู้ใช้ (2026-09-24) ไม่มีการคำนวณ/แสดงผลส่วนนี้แล้วทั้งในโมเดล 3D และเครื่องคำนวณเดิม (index_v2.html)</div>
       </div>
 
       <div class="dataSection">
@@ -1304,12 +1298,11 @@ Pa_compression = Fcr × A / Ωc             ← ใหม่ทั้งหม�
       </div>
 
       <div class="dataSection">
-        <h2>Load Combination ที่ใช้จริง (ฟังก์ชัน getGovCombo + checkUplift)</h2>
+        <h2>Load Combination ที่ใช้จริง (ฟังก์ชัน getGovCombo)</h2>
         <div class="formulaBox">c1  = DL + LL
 c2a = DL + 0.75×(LL + WL)
-govern = MAX(c1, c2a)
-เช็คลมดูด (uplift) แยกต่างหาก: net = 0.6×DL − WL ต้อง ≥ 0</div>
-        <div class="fieldHelp">แยกเช็คลมดูด (0.6DL−WL ≥ 0) ออกจากโหลดออกแบบหลักแล้ว ตรงกับเอนจินใหม่</div>
+govern = MAX(c1, c2a)</div>
+        <div class="fieldHelp">เดิมมีเช็คลมดูด (uplift, checkUplift: 0.6DL−WL≥0) แยกต่างหากด้วย — เอาออกแล้วตามคำขอผู้ใช้ (2026-09-24) ทั้งฟังก์ชันนี้และการแสดงผลที่เกี่ยวข้องถูกลบออกจาก index_v2.html แล้ว</div>
       </div>
 
       <div class="dataSection">
@@ -1321,7 +1314,6 @@ Mx = wx×L²/8   My = wy×Ley²/8   Vx = wx×L/2
 Mrx = Fb×Zx×mul/100   Mry = Fb×Zy×mul/100
 Va  = Fv×(h/10)×(tw/10)×nw×mul
 เช็คโก่งตัว: δ = 5×wx×L⁴ / (384×E×(Ix×mul))  ≤  L/120   (Ix เป็น cm⁴ ตรงๆ ไม่มีตัวคูณ ×10,000 แล้ว)
-เช็คลมดูด: 0.6×DL − WL ≥ 0
 อัตราส่วนรวม: Mx/Mrx + My/Mry ≤ 1  และ  Vx/Va ≤ 1</div>
         <div class="fieldHelp">ตัวคูณ ×10,000 ที่เคยทำให้ δ เล็กเกินจริง 10,000 เท่าถูกลบออกแล้วในฟังก์ชันนี้ (ไม่ใช่แค่โค้ดโมเดล 3D อีกต่อไป)</div>
       </div>
@@ -1332,8 +1324,7 @@ Va  = Fv×(h/10)×(tw/10)×nw×mul
 w = govern(DL,LL,WL) × ระยะห่างจันทัน   wx = w×cosθ
 M = wx×L²/8   Mr = Fb×Zx×mul/100     เช็ค: M/Mr ≤ 1
 V = wx×L/2    Va = Fv×(h/10)×(tw/10)×nWebs×mul     เช็ค: V/Va ≤ 1
-เช็คโก่งตัว: δ = 5×wx×L⁴/(384×E×(Ix×mul)) ≤ L/120
-เช็คลมดูด: 0.6×DL − WL ≥ 0</div>
+เช็คโก่งตัว: δ = 5×wx×L⁴/(384×E×(Ix×mul)) ≤ L/120</div>
         <div class="fieldHelp">สูตรโครงสร้างเดียวกับแป (chain DL ต่อกันจริง) — ใช้ Fb/Fv และไม่มีบั๊กหน่วย ×10,000 แล้ว</div>
       </div>
 
@@ -1345,9 +1336,8 @@ F_TC = F_BC = M_max / ความลึกโครงถัก      F_web = R 
 r  = √(Ix/A)      Fe = π²E/(KL/r)²    (K=1.0, L = ความยาวชิ้นส่วนจริงต่อประเภท: ช่วง chord/ค้ำยัน=ความสูง/ทแยง=ความยาวทแยง)
 ถ้า KL/r ≤ 4.71√(E/Fy): Fcr = 0.658^(Fy/Fe)×Fy   มิฉะนั้น Fcr = 0.877×Fe
 Pr = Fcr×A/Ωc   (คำนวณแบบเดียวกันทุกชิ้นส่วน ไม่ว่าจะเป็นตงบน/ตงล่าง/ค้ำยัน/ทแยง — อนุรักษ์นิยม)
-เช็คลมดูด: 0.6×DL − WL ≥ 0
 อัตราส่วน: F/Pr ≤ 1.0</div>
-        <div class="fieldHelp">เพิ่มการเช็คโก่งเดาะ (Fcr/Ωc) และเช็คลมดูดแล้ว ตรงกับเอนจินใหม่ — ใช้แรงลมในโหลดออกแบบด้วย (เดิมไม่เคยรวมแรงลมเข้าไปในโหลดของโครงถักเลย)</div>
+        <div class="fieldHelp">เพิ่มการเช็คโก่งเดาะ (Fcr/Ωc) แล้ว ตรงกับเอนจินใหม่ — ใช้แรงลมในโหลดออกแบบด้วย (เดิมไม่เคยรวมแรงลมเข้าไปในโหลดของโครงถักเลย)</div>
         <div class="fieldHelp">⚠️ พึ่งพา DOM: โค้ดนี้ดึงค่า DL โดยอ่านข้อความที่แสดงผลบนหน้าจอของแท็บแปโดยตรง (ไม่ได้รับค่าจากตัวแปรคำนวณ) — ถ้ายังไม่เคยกดคำนวณแท็บแปมาก่อน จะใช้ค่า fallback 75 กก./ตร.ม. แทน โดยไม่มีการแจ้งเตือนผู้ใช้ ยังเป็นข้อจำกัดเดิมที่ไม่ได้แก้</div>
       </div>
 
@@ -1358,7 +1348,7 @@ Pr = Fcr×A/Ωc   (คำนวณแบบเดียวกันทุกช�
           <tr><td>สีเขียว/แดงของชิ้นส่วนในแท็บ "โมเดล 3D"</td><td>เอนจินใหม่ (สูตรด้านบนสุดของหน้านี้) — ASD เช่นกัน</td></tr>
         </table>
         <div class="fieldHelp">สองเอนจินนี้ใช้ข้อมูล input เดียวกัน (sync อัตโนมัติ) และตอนนี้ใช้ค่าคงที่/หลักเกณฑ์ ASD เดียวกันแล้ว — ผลผ่าน/ไม่ผ่านควรใกล้เคียงกันมาก ความต่างที่เหลือมาจากรายละเอียดการ implement (เช่น เอนจินเก่าคำนวณโครงถักแบบง่าย ไม่แยกชนิดชิ้นส่วนจากรูปทรง 3D จริง) ไม่ใช่จากสูตรที่ต่างปรัชญากันอีกต่อไป</div>
-        <div class="sourceNote">แกะจาก: index_v2.html (root) — ฟังก์ชัน getGovCombo, checkUplift, doPurlinCalc, doRafterCalc, calcTruss (โค้ดจริงที่ deploy อยู่) · เพิ่มหัวข้อนี้ 2026-09-15, อัปเดตหลังแก้บั๊ก 2026-09-16 (โดย AI ไม่ใช่วิศวกรที่มีใบอนุญาต — ต้องให้วิศวกรตรวจทานก่อนใช้งานจริงเสมอ)</div>
+        <div class="sourceNote">แกะจาก: index_v2.html (root) — ฟังก์ชัน getGovCombo, doPurlinCalc, doRafterCalc, calcTruss (โค้ดจริงที่ deploy อยู่) · เพิ่มหัวข้อนี้ 2026-09-15, อัปเดตหลังแก้บั๊ก 2026-09-16, อัปเดตหลังเอาเช็คลมดูดออก 2026-09-24 (โดย AI ไม่ใช่วิศวกรที่มีใบอนุญาต — ต้องให้วิศวกรตรวจทานก่อนใช้งานจริงเสมอ)</div>
       </div>
 
       </div>
@@ -2012,7 +2002,6 @@ html,body{margin:0;padding:0;background:#09101f;color:#eef2fa;min-height:100%;ov
       <div id="r-row-vx" class="result-row"><span class="result-label"><span id="r-chk-vx"></span>Vx / Vallow (kgf)</span><span class="result-val" id="r-vx">—</span></div>
       <div id="r-row-ratio" class="result-row"><span class="result-label"><span id="r-chk-ratio"></span>Stress Ratio</span><span class="result-val" id="r-ratio">—</span></div>
       <div id="r-row-defl" class="result-row"><span class="result-label"><span id="r-chk-defl"></span>Deflection / L/120</span><span class="result-val" id="r-defl">—</span></div>
-      <div id="r-row-uplift" class="result-row"><span class="result-label"><span id="r-chk-uplift"></span>เช็คลมดูด (0.6DL−WL)</span><span class="result-val" id="r-uplift">—</span></div>
     </div>
     <div class="verdict hidden" id="p-verdict"><span id="p-v-icon"></span><div><div class="verdict-text" id="p-v-text"></div><div class="verdict-sub" id="p-v-sub"></div></div></div>
     <!-- fix box: แสดงเฉพาะเมื่อยังไม่ใช่ (sag2+double) -->
@@ -2043,7 +2032,6 @@ html,body{margin:0;padding:0;background:#09101f;color:#eef2fa;min-height:100%;ov
             <div id="fix-row-vx" class="result-row"><span class="result-label"><span id="fix-chk-vx"></span>Vx / Vallow</span><span class="result-val" id="fix-vx">—</span></div>
             <div id="fix-row-ratio" class="result-row"><span class="result-label"><span id="fix-chk-ratio"></span>Stress Ratio</span><span class="result-val" id="fix-ratio">—</span></div>
             <div id="fix-row-defl" class="result-row"><span class="result-label"><span id="fix-chk-defl"></span>Deflection / L/120</span><span class="result-val" id="fix-defl">—</span></div>
-            <div id="fix-row-uplift" class="result-row"><span class="result-label"><span id="fix-chk-uplift"></span>เช็คลมดูด (0.6DL−WL)</span><span class="result-val" id="fix-uplift">—</span></div>
           </div>
           <div class="verdict hidden" id="fix-verdict"><span id="fix-v-icon"></span><div><div class="verdict-text" id="fix-v-text"></div><div class="verdict-sub" id="fix-v-sub"></div></div></div>
         </div>
@@ -2103,7 +2091,6 @@ html,body{margin:0;padding:0;background:#09101f;color:#eef2fa;min-height:100%;ov
       <div id="rr-row-vx" class="result-row"><span class="result-label"><span id="rr-chk-vx"></span>Vx / Vallow (kgf)</span><span class="result-val" id="rr-vx">—</span></div>
       <div id="rr-row-ratio" class="result-row"><span class="result-label"><span id="rr-chk-ratio"></span>Stress Ratio</span><span class="result-val" id="rr-ratio">—</span></div>
       <div id="rr-row-defl" class="result-row"><span class="result-label"><span id="rr-chk-defl"></span>Deflection / L/120</span><span class="result-val" id="rr-defl">—</span></div>
-      <div id="rr-row-uplift" class="result-row"><span class="result-label"><span id="rr-chk-uplift"></span>เช็คลมดูด (0.6DL−WL)</span><span class="result-val" id="rr-uplift">—</span></div>
     </div>
     <div class="verdict hidden" id="r-verdict"><span id="r-v-icon"></span><div><div class="verdict-text" id="r-v-text"></div><div class="verdict-sub" id="r-v-sub"></div></div></div>
     <!-- auto double result: แสดงอัตโนมัติเมื่อเดี่ยวไม่ผ่าน -->
@@ -2115,7 +2102,6 @@ html,body{margin:0;padding:0;background:#09101f;color:#eef2fa;min-height:100%;ov
           <div id="rd-row-vx" class="result-row"><span class="result-label"><span id="rd-chk-vx"></span>Vx / Vallow (kgf)</span><span class="result-val" id="rd-vx">—</span></div>
           <div id="rd-row-ratio" class="result-row"><span class="result-label"><span id="rd-chk-ratio"></span>Stress Ratio</span><span class="result-val" id="rd-ratio">—</span></div>
           <div id="rd-row-defl" class="result-row"><span class="result-label"><span id="rd-chk-defl"></span>Deflection / L/120</span><span class="result-val" id="rd-defl">—</span></div>
-          <div id="rd-row-uplift" class="result-row"><span class="result-label"><span id="rd-chk-uplift"></span>เช็คลมดูด (0.6DL−WL)</span><span class="result-val" id="rd-uplift">—</span></div>
         </div>
         <div class="verdict hidden" id="rd-verdict"><span id="rd-v-icon"></span><div><div class="verdict-text" id="rd-v-text"></div><div class="verdict-sub" id="rd-v-sub"></div></div></div>
       </div>
@@ -2190,7 +2176,6 @@ html,body{margin:0;padding:0;background:#09101f;color:#eef2fa;min-height:100%;ov
       <div id="tr-row-diag" class="result-row"><span class="result-label"><span id="tr-chk-diag"></span>Diagonal สูงสุด / Pr (kgf)</span><span class="result-val" id="tr-diag">—</span></div>
       <div id="tr-row-tcr" class="result-row"><span class="result-label"><span id="tr-chk-tcr"></span>Top chord stress ratio</span><span class="result-val" id="tr-tc-r">—</span></div>
       <div id="tr-row-bcr" class="result-row"><span class="result-label"><span id="tr-chk-bcr"></span>Bottom chord stress ratio</span><span class="result-val" id="tr-bc-r">—</span></div>
-      <div id="tr-row-uplift" class="result-row"><span class="result-label"><span id="tr-chk-uplift"></span>เช็คลมดูด (0.6DL−WL)</span><span class="result-val" id="tr-uplift">—</span></div>
     </div>
     <div class="verdict hidden" id="t-verdict"><span id="t-v-icon"></span><div><div class="verdict-text" id="t-v-text"></div><div class="verdict-sub" id="t-v-sub"></div></div></div>
     <button id="add-truss-btn" class="add-item-btn hidden" onclick="addTrussItem()">＋ เพิ่มรายการ</button>
@@ -2441,10 +2426,9 @@ function buildOpts(data,sid){const s=document.getElementById(sid);s.innerHTML=''
 function getOpt(id){const s=document.getElementById(id);return s.options[s.selectedIndex];}
 function getCatData(c){return c==='c'?C_DATA:c==='rhs'?RHS_DATA:SHS_DATA;}
 function getGovCombo(DL,LL,WL){const c1=DL+LL,c2a=DL+0.75*(LL+WL);const g=Math.max(c1,c2a);return{c1,c2a,govern:g,name:g===c1?'(1) DL+LL':'(2a) DL+0.75(LL+WL)'};}
-function checkUplift(DL,WL){const net=0.6*DL-WL;return{net,safe:net>=0};}
 function renderCombo(cid,DL,LL,WL,note){
-  const co=getGovCombo(DL,LL,WL);const up=checkUplift(DL,WL);const g=n=>rd(n,1);
-  document.getElementById(cid).innerHTML=`<div class="combo-box"><div class="combo-title">Load Combinations${note?' ('+note+')':''}</div><div class="combo-row"><span>DL</span><span>${g(DL)} kgf/m²</span></div><div class="combo-row"><span>LL</span><span>${g(LL)} kgf/m²</span></div><div class="combo-row"><span>WL</span><span>${g(WL)} kgf/m²</span></div><div class="combo-row"><span>(1) DL+LL</span><span>${g(co.c1)}</span></div><div class="combo-row"><span>(2a) DL+0.75(LL+WL)</span><span>${g(co.c2a)}</span></div><div class="combo-row govern">✦ ${co.name} = ${g(co.govern)} kgf/m²</div><div class="combo-row${up.safe?'':' row-fail'}"><span>(2b) เช็คลมดูด 0.6DL−WL</span><span>${g(up.net)} kgf/m² ${up.safe?'✔':'✘'}</span></div></div>`;return co;
+  const co=getGovCombo(DL,LL,WL);const g=n=>rd(n,1);
+  document.getElementById(cid).innerHTML=`<div class="combo-box"><div class="combo-title">Load Combinations${note?' ('+note+')':''}</div><div class="combo-row"><span>DL</span><span>${g(DL)} kgf/m²</span></div><div class="combo-row"><span>LL</span><span>${g(LL)} kgf/m²</span></div><div class="combo-row"><span>WL</span><span>${g(WL)} kgf/m²</span></div><div class="combo-row"><span>(1) DL+LL</span><span>${g(co.c1)}</span></div><div class="combo-row"><span>(2a) DL+0.75(LL+WL)</span><span>${g(co.c2a)}</span></div><div class="combo-row govern">✦ ${co.name} = ${g(co.govern)} kgf/m²</div></div>`;return co;
 }
 function setRow(rowId,chkId,pass,neutral){const row=document.getElementById(rowId),chk=document.getElementById(chkId);if(!row)return;row.className='result-row '+(neutral?'':pass?'row-pass':'row-fail');chk.textContent=neutral?'':pass?'✔ ':'✘ ';}
 function showVerdict(vbId,viId,vtId,vsId,pass,pm,fm,sub){const vb=document.getElementById(vbId);if(!vb)return;document.getElementById(viId).innerHTML=pass?'<i class="ti ti-circle-check" style="font-size:26px;color:#0F6E56"></i>':'<i class="ti ti-circle-x" style="font-size:26px;color:#A32D2D"></i>';document.getElementById(vtId).textContent=pass?pm:fm;document.getElementById(vsId).textContent=sub;vb.className='verdict '+(pass?'pass':'fail');vb.classList.remove('hidden');}
@@ -2504,7 +2488,6 @@ function doPurlinCalc(sec,sagM,isDouble){
   const geo=getRoofGeo();const theta=geo.theta;
   const sw=sec.wt*(isDouble?2:1)/s;const DL=roofWt+20+ceilWt+sw,LL=liveLoad,WL=getWL_c();
   const co=getGovCombo(DL,LL,WL);const w=co.govern*s;
-  const up=checkUplift(DL,WL);
   const Ley=L*getSagFactor(sagM),wx=w*Math.cos(theta),wy=w*Math.sin(theta);
   const Mx=wx*L*L/8,My=wy*Ley*Ley/8,Vx=wx*L/2;
   const mul=isDouble?2:1;
@@ -2513,7 +2496,7 @@ function doPurlinCalc(sec,sagM,isDouble){
   const Av=(sec.h/10)*(sec.tw/10)*sec.nw,Va=Fv*Av*mul;
   const Ix=sec.ix*mul,Lcm=L*100,defl=5*(wx/100)*Math.pow(Lcm,4)/(384*E_kgf*Ix),dlim=Lcm/120;
   const Ms=Mx/Mrx+My/Mry,Vr=Vx/Va;
-  return{L,s,theta,thetaDeg:geo.thetaDeg,w,Mx,My,Mrx,Mry,Vx,Va,Ms,Vr,defl,dlim,up,ok:Ms<=1&&Vr<=1&&defl<=dlim,co,DL,LL,WL,sw,geo};
+  return{L,s,theta,thetaDeg:geo.thetaDeg,w,Mx,My,Mrx,Mry,Vx,Va,Ms,Vr,defl,dlim,ok:Ms<=1&&Vr<=1&&defl<=dlim,co,DL,LL,WL,sw,geo};
 }
 
 /* ===== PURLIN CALC ===== */
@@ -2528,10 +2511,9 @@ function calcPurlin(){
   document.getElementById('r-vx').textContent=r0(res.Vx)+'/'+r0(res.Va)+' ['+r3(res.Vr)+']';
   document.getElementById('r-ratio').textContent='M='+r3(res.Ms)+' V='+r3(res.Vr)+(res.Ms<=1&&res.Vr<=1?' ✔':' ✘');
   document.getElementById('r-defl').textContent='δ='+rd(res.defl,3)+'/L/120='+rd(res.dlim,3)+' ['+r3(res.defl/res.dlim)+']';
-  document.getElementById('r-uplift').textContent='net='+rd(res.up.net,1)+' kgf/m² (0.6DL−WL)'+(res.up.safe?' ✔':' ✘ ลมดูด');
   setRow('r-row-shape','r-chk-shape',true,true);setRow('r-row-combo','r-chk-combo',true,true);setRow('r-row-wload','r-chk-wload',true,true);
   setRow('r-row-mx','r-chk-mx',res.Mx<=res.Mrx,false);setRow('r-row-my','r-chk-my',res.My<=res.Mry,false);
-  setRow('r-row-vx','r-chk-vx',res.Vr<=1,false);setRow('r-row-ratio','r-chk-ratio',res.Ms<=1&&res.Vr<=1,false);setRow('r-row-defl','r-chk-defl',res.defl<=res.dlim,false);setRow('r-row-uplift','r-chk-uplift',res.up.safe,false);
+  setRow('r-row-vx','r-chk-vx',res.Vr<=1,false);setRow('r-row-ratio','r-chk-ratio',res.Ms<=1&&res.Vr<=1,false);setRow('r-row-defl','r-chk-defl',res.defl<=res.dlim,false);
   showVerdict('p-verdict','p-v-icon','p-v-text','p-v-sub',res.ok,'ผ่าน — แปรับน้ำหนักได้','ไม่ผ่าน — ดูคำแนะนำ','');
   document.getElementById('purlin-result').classList.remove('hidden');
   // Reset fix state — inherit SAG จากการเลือกหลัก ไม่ pre-set '2'
@@ -2558,9 +2540,8 @@ function calcFixPurlin(){
   document.getElementById('fix-vx').textContent=r0(res.Vx)+'/'+r0(res.Va)+' ['+r3(res.Vr)+']';
   document.getElementById('fix-ratio').textContent='M='+r3(res.Ms)+' V='+r3(res.Vr)+(res.Ms<=1&&res.Vr<=1?' ✔':' ✘');
   document.getElementById('fix-defl').textContent='δ='+rd(res.defl,3)+'/L/120='+rd(res.dlim,3)+' ['+r3(res.defl/res.dlim)+']';
-  document.getElementById('fix-uplift').textContent='net='+rd(res.up.net,1)+' kgf/m² (0.6DL−WL)'+(res.up.safe?' ✔':' ✘ ลมดูด');
   setRow('fix-row-mx','fix-chk-mx',res.Mx<=res.Mrx,false);setRow('fix-row-my','fix-chk-my',res.My<=res.Mry,false);
-  setRow('fix-row-vx','fix-chk-vx',res.Vr<=1,false);setRow('fix-row-ratio','fix-chk-ratio',res.Ms<=1&&res.Vr<=1,false);setRow('fix-row-defl','fix-chk-defl',res.defl<=res.dlim,false);setRow('fix-row-uplift','fix-chk-uplift',res.up.safe,false);
+  setRow('fix-row-vx','fix-chk-vx',res.Vr<=1,false);setRow('fix-row-ratio','fix-chk-ratio',res.Ms<=1&&res.Vr<=1,false);setRow('fix-row-defl','fix-chk-defl',res.defl<=res.dlim,false);
   if(res.ok){
     showVerdict('fix-verdict','fix-v-icon','fix-v-text','fix-v-sub',true,'ผ่าน — แปที่แก้ไขรับน้ำหนักได้','','');
   } else {
@@ -2589,11 +2570,10 @@ function updateRafterCarried(){
 }
 function doRafterCalc(Lr,sr,mul,Zx,Ix,tw,h,wSelf,nWebs,p){
   const selfW=wSelf*mul/sr;const DL_r=p.DL_pm2+selfW;const co=getGovCombo(DL_r,p.LL_pm2,p.WL_pm2);const wTot=co.govern*sr;
-  const up=checkUplift(DL_r,p.WL_pm2);
   const Mr=Fb*Zx*mul/100,Mx=wTot*Lr*Lr/8,Vx=wTot*Lr/2;
   const Av=(h/10)*(tw/10)*nWebs,Va=Fv*Av*mul;const Mstress=Mx/Mr,Vratio=Vx/Va;
   const Lcm=Lr*100,deflMax=5*(wTot/100)*Math.pow(Lcm,4)/(384*E_kgf*Ix*mul),deflLimit=Lcm/120,deflCheck=deflMax<=deflLimit;
-  return{co,wTot,Mr,Mx,Vx,Va,Mstress,Vratio,deflMax,deflLimit,deflCheck,up,mPass:Mstress<=1,vPass:Vratio<=1,pass:Mstress<=1&&Vratio<=1&&deflCheck,selfW};
+  return{co,wTot,Mr,Mx,Vx,Va,Mstress,Vratio,deflMax,deflLimit,deflCheck,mPass:Mstress<=1,vPass:Vratio<=1,pass:Mstress<=1&&Vratio<=1&&deflCheck,selfW};
 }
 function getRafterRawProps(){
   if(rafterType==='hot'){const cat=document.getElementById('r-hot-cat').value;const opt=getOpt('r-hot-section');return{Zx:+opt.dataset.zx,Ix:+opt.dataset.ix,tw:+opt.dataset.tw,h:+opt.dataset.h,wSelf:+opt.dataset.wt,secLabel:opt.textContent,nWebs:cat==='c'?1:2,is2C:false};}
@@ -2614,9 +2594,8 @@ function calcRafter(){
   document.getElementById('rr-vx').textContent=r0(res.Vx)+'/'+r0(res.Va)+' ['+r3(res.Vratio)+']';
   document.getElementById('rr-ratio').textContent='M='+r3(res.Mstress)+' V='+r3(res.Vratio)+(res.mPass&&res.vPass?' ✔':' ✘');
   document.getElementById('rr-defl').textContent='δ='+rd(res.deflMax,3)+'/L/120='+rd(res.deflLimit,3)+' ['+r3(res.deflMax/res.deflLimit)+']';
-  document.getElementById('rr-uplift').textContent='net='+rd(res.up.net,1)+' kgf/m² (0.6DL−WL)'+(res.up.safe?' ✔':' ✘ ลมดูด');
   setRow('rr-row-combo','rr-chk-combo',true,true);setRow('rr-row-sec','rr-chk-sec',true,true);setRow('rr-row-span','rr-chk-span',true,true);setRow('rr-row-w','rr-chk-w',true,true);
-  setRow('rr-row-mx','rr-chk-mx',res.mPass,false);setRow('rr-row-vx','rr-chk-vx',res.vPass,false);setRow('rr-row-ratio','rr-chk-ratio',res.mPass&&res.vPass,false);setRow('rr-row-defl','rr-chk-defl',res.deflCheck,false);setRow('rr-row-uplift','rr-chk-uplift',res.up.safe,false);
+  setRow('rr-row-mx','rr-chk-mx',res.mPass,false);setRow('rr-row-vx','rr-chk-vx',res.vPass,false);setRow('rr-row-ratio','rr-chk-ratio',res.mPass&&res.vPass,false);setRow('rr-row-defl','rr-chk-defl',res.deflCheck,false);
   showVerdict('r-verdict','r-v-icon','r-v-text','r-v-sub',res.pass,'ผ่าน — จันทันรับน้ำหนักได้','ไม่ผ่าน','');
   document.getElementById('rafter-result').classList.remove('hidden');
   document.getElementById('r-double-block').classList.add('hidden');
@@ -2631,8 +2610,7 @@ function calcRafter(){
       document.getElementById('rd-vx').textContent=r0(res2.Vx)+'/'+r0(res2.Va)+' ['+r3(res2.Vratio)+']';
       document.getElementById('rd-ratio').textContent='M='+r3(res2.Mstress)+' V='+r3(res2.Vratio)+(res2.mPass&&res2.vPass?' ✔':' ✘');
       document.getElementById('rd-defl').textContent='δ='+rd(res2.deflMax,3)+'/L/120='+rd(res2.deflLimit,3)+' ['+r3(res2.deflMax/res2.deflLimit)+']';
-      document.getElementById('rd-uplift').textContent='net='+rd(res2.up.net,1)+' kgf/m² (0.6DL−WL)'+(res2.up.safe?' ✔':' ✘ ลมดูด');
-      setRow('rd-row-mx','rd-chk-mx',res2.mPass,false);setRow('rd-row-vx','rd-chk-vx',res2.vPass,false);setRow('rd-row-ratio','rd-chk-ratio',res2.mPass&&res2.vPass,false);setRow('rd-row-defl','rd-chk-defl',res2.deflCheck,false);setRow('rd-row-uplift','rd-chk-uplift',res2.up.safe,false);
+      setRow('rd-row-mx','rd-chk-mx',res2.mPass,false);setRow('rd-row-vx','rd-chk-vx',res2.vPass,false);setRow('rd-row-ratio','rd-chk-ratio',res2.mPass&&res2.vPass,false);setRow('rd-row-defl','rd-chk-defl',res2.deflCheck,false);
       showVerdict('rd-verdict','rd-v-icon','rd-v-text','rd-v-sub',res2.pass,'ผ่าน — จันทัน 2 ตัวประกบรับน้ำหนักได้','ยังไม่ผ่าน','');
       document.getElementById('r-double-block').classList.remove('hidden');
     }
@@ -2817,7 +2795,6 @@ function calcTruss(){
   const llVal=liveLoad;
   const WL=getWL_c();
   const co=getGovCombo(dlVal,llVal,WL);
-  const up=checkUplift(dlVal,WL);
   const wPerM=co.govern*spacing;
   const M_max=wPerM*effSpan*effSpan/8;const R=wPerM*effSpan/2;
   const F_TC=M_max/ht,F_BC=M_max/ht,F_web=R;
@@ -2846,12 +2823,10 @@ function calcTruss(){
   document.getElementById('tr-web').textContent=r0(F_web)+' / '+r0(Pr_web)+' kgf';
   document.getElementById('tr-diag').textContent=diagPat==='no'?'ไม่มี diagonal':r0(F_diag)+' / '+r0(Pr_diag)+' kgf';
   document.getElementById('tr-tc-r').textContent=r3(r_tc)+' (≤ 1.0)';document.getElementById('tr-bc-r').textContent=r3(r_bc)+' (≤ 1.0)';
-  document.getElementById('tr-uplift').textContent='net='+rd(up.net,1)+' kgf/m² (0.6DL−WL)'+(up.safe?' ✔':' ✘ ลมดูด');
   setRow('tr-row-type','tr-chk-type',true,true);setRow('tr-row-load','tr-chk-load',true,true);
   setRow('tr-row-tc','tr-chk-tc',r_tc<=1,false);setRow('tr-row-bc','tr-chk-bc',r_bc<=1,false);
   setRow('tr-row-web','tr-chk-web',r_web<=1,false);setRow('tr-row-diag','tr-chk-diag',r_diag<=1,diagPat==='no');
   setRow('tr-row-tcr','tr-chk-tcr',r_tc<=1,false);setRow('tr-row-bcr','tr-chk-bcr',r_bc<=1,false);
-  setRow('tr-row-uplift','tr-chk-uplift',up.safe,false);
   const failMsgs=[];if(r_tc>1)failMsgs.push('TC='+r3(r_tc));if(r_bc>1)failMsgs.push('BC='+r3(r_bc));if(r_web>1)failMsgs.push('Web='+r3(r_web));if(r_diag>1)failMsgs.push('Diag='+r3(r_diag));
   showVerdict('t-verdict','t-v-icon','t-v-text','t-v-sub',pass,'ผ่าน — โครงถักรับน้ำหนักได้','ไม่ผ่าน',pass?'Max ratio='+r3(maxR):failMsgs.join(' | '));
   document.getElementById('truss-result').classList.remove('hidden');
@@ -3752,11 +3727,6 @@ updateAll();updateRafterCarried();
   function getGovCombo(DL, LL, WL){
     return Math.max(DL+LL, DL+0.75*(LL+WL));
   }
-  // (2b) 0.6DL−WL ลมดูด (uplift) — เช็คแยกต่างหาก: net ต้องยังเป็นบวก (โครงสร้างไม่ปลิว) — Part D ของแผน wiring
-  function checkUplift(DL, WL){
-    var net = 0.6*DL - WL;
-    return { net: net, safe: net >= 0 };
-  }
   function computePurlin(d){
     var shared = computeSharedLoads();
     var sec = selectedPurlinSection;
@@ -3850,24 +3820,6 @@ updateAll();updateRafterCarried();
     var F_web = (diagMode === 'none') ? R : Math.max(R, R/Math.sin(thetaDiag));
     return { F_TC:F_TC, F_web:F_web, R:R, M_max:M_max, DL:DL, govern:govern, WL:shared.WL };
   }
-  // Part D — เช็คลมดูด (Uplift) แยกต่างหาก ทุกระดับของ load path (DL ไม่ขึ้นกับความยาวชิ้นส่วน เลยเช็คครั้งเดียวพอต่อระดับ)
-  function getPurlinUplift(){
-    var shared = computeSharedLoads();
-    var mul = (typeof purlinDoubled!=='undefined' && purlinDoubled) ? 2 : 1;
-    var s = parseFloat(document.getElementById('pPurlinSpacing').value) || 1.2;
-    var selfW = (selectedPurlinSection.wt*mul) / s;
-    var DL = shared.roofWt + shared.solarWt + shared.ceilWt + selfW;
-    return checkUplift(DL, shared.WL);
-  }
-  function getRafterUplift(){
-    var shared = computeSharedLoads();
-    var DL = shared.roofWt + shared.solarWt + shared.ceilWt + getPurlinSelfWPerArea() + getRafterSelfWPerArea();
-    return checkUplift(DL, shared.WL);
-  }
-  function getTrussUplift(){
-    var t = computeTrussShared();
-    return checkUplift(t.DL, t.WL);
-  }
   function trussMemberCapacity(sec, Lm){
     var Fy = params.Fb/0.6;
     var E = 2039000; // kgf/cm²
@@ -3909,7 +3861,6 @@ updateAll();updateRafterCarried();
     return { fb:fb, Fb:params.Fb, pct:pct };
   }
   // รับได้ทั้งตัวเลข pct เดิม หรือ object จาก utilizationOf() (เพื่อรวมเช็คโก่งตัวเข้าไปในสีด้วย — ให้ตรงกับกล่อง "ผลรวม")
-  // หมายเหตุ: เช็คลมดูด (uplift) แสดงเป็นข้อมูลแยกต่างหาก (renderUpliftBadge) ไม่นำมานับรวมในผ่าน/ไม่ผ่านแล้ว ตามคำขอผู้ใช้
   function memberFails(u){
     if(u.pct >= THRESH.red) return true;
     if(u.deflOk === false) return true;
@@ -4610,13 +4561,6 @@ updateAll();updateRafterCarried();
   });
 
   /* ============ กล่องแนะนำการแก้ไข — แป (แสดงเมื่อชิ้นใดชิ้นหนึ่งเกินพิกัด) ============ */
-  // Part D — แสดงผลเช็คลมดูด (Uplift) ในกล่อง "ผลรวม..." ของแต่ละระดับ
-  function renderUpliftBadge(elId, uplift){
-    var el = document.getElementById(elId);
-    if(!el) return;
-    el.textContent = (uplift.safe ? '✔ ปลอดภัย ' : '⚠ เสี่ยงปลิว ') + uplift.net.toFixed(1) + ' กก./ตร.ม.';
-    el.style.color = uplift.safe ? 'var(--accent)' : 'var(--red)';
-  }
   // แสดงผลเช็คโก่งตัว (Deflection) — ใช้ค่าจากชิ้นที่แย่ที่สุด (deflection ratio สูงสุด)
   function renderDeflBadge(elId, worstDefl, worstDlim, deflOk){
     var el = document.getElementById(elId);
@@ -4635,7 +4579,6 @@ updateAll();updateRafterCarried();
       if(dr > worstDeflRatio){ worstDeflRatio = dr; worstDefl = u.defl; worstDlim = u.dlim; }
     });
     var deflOk = worstDeflRatio <= 1;
-    var uplift = getPurlinUplift(); // แสดงผลเป็นข้อมูลเท่านั้น ไม่นับรวมในผ่าน/ไม่ผ่าน
     var fail = worst >= 100 || !deflOk;
     var el = document.getElementById('purlinResultRatio');
     var vEl = document.getElementById('purlinResultVerdict');
@@ -4646,7 +4589,6 @@ updateAll();updateRafterCarried();
       vEl.style.color = fail ? 'var(--red)' : 'var(--accent)';
     }
     if(boxEl) boxEl.style.display = fail ? '' : 'none';
-    renderUpliftBadge('purlinUpliftVal', uplift);
     renderDeflBadge('purlinDeflVal', worstDefl, worstDlim, deflOk);
     setSubDot('dotPurlin', !isPurlinValid() ? 'grey' : (fail ? 'red' : 'green'));
   }
@@ -4661,7 +4603,6 @@ updateAll();updateRafterCarried();
       if(dr > worstDeflRatio){ worstDeflRatio = dr; worstDefl = u.defl; worstDlim = u.dlim; }
     });
     var deflOk = worstDeflRatio <= 1;
-    var uplift = getRafterUplift(); // แสดงผลเป็นข้อมูลเท่านั้น ไม่นับรวมในผ่าน/ไม่ผ่าน
     var fail = worst >= 100 || !deflOk;
     var el = document.getElementById('rafterResultRatio');
     var vEl = document.getElementById('rafterResultVerdict');
@@ -4672,7 +4613,6 @@ updateAll();updateRafterCarried();
       vEl.style.color = fail ? 'var(--red)' : 'var(--accent)';
     }
     if(boxEl) boxEl.style.display = fail ? '' : 'none';
-    renderUpliftBadge('rafterUpliftVal', uplift);
     renderDeflBadge('rafterDeflVal', worstDefl, worstDlim, deflOk);
     setSubDot('dotRafter', !isRafterValid() ? 'grey' : (fail ? 'red' : 'green'));
   }
@@ -4684,7 +4624,6 @@ updateAll();updateRafterCarried();
       var u = utilizationOf(d);
       if(u.pct > worst) worst = u.pct;
     });
-    var uplift = getTrussUplift(); // แสดงผลเป็นข้อมูลเท่านั้น ไม่นับรวมในผ่าน/ไม่ผ่าน
     var fail = worst >= 100;
     var el = document.getElementById('trussResultRatio');
     var vEl = document.getElementById('trussResultVerdict');
@@ -4695,7 +4634,6 @@ updateAll();updateRafterCarried();
       vEl.style.color = fail ? 'var(--red)' : 'var(--accent)';
     }
     if(boxEl) boxEl.style.display = fail ? '' : 'none';
-    renderUpliftBadge('trussUpliftVal', uplift);
     setSubDot('dotTruss', !isTrussValid() ? 'grey' : (fail ? 'red' : 'green'));
   }
   // ปุ่มลัดใน "แนะนำการแก้ไข" — ปรับ SAG Rod จริง (ตัวเดียวกับด้านบน) แล้วคำนวณใหม่ทันที
