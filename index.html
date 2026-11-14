@@ -2291,6 +2291,14 @@ input:not([readonly]):hover,select:hover{border-color:rgba(16,185,129,.5)}
   <p class="sec-label">จำนวนแผงโซลาร์ที่ติดตั้งได้ &amp; ประมาณราคา</p>
   <div id="solar-msg"></div>
   <div id="solar-cards"></div>
+  <div id="solar-view3d" class="hidden" style="margin:10px 0">
+    <div style="font-size:13px;margin-bottom:6px">แสดงในโมเดล 3D:</div>
+    <div class="radio-group">
+      <div class="radio-btn active" data-v3="current" onclick="setSolarView3D('current')">1) ปัจจุบัน</div>
+      <div class="radio-btn" data-v3="best" onclick="setSolarView3D('best')">2) คุ้มที่สุด</div>
+      <div class="radio-btn" data-v3="max" onclick="setSolarView3D('max')">3) สูงสุดหลังเสริม</div>
+    </div>
+  </div>
   <p class="sec-label">ตารางราคา (แก้ไขได้ — ติ๊กออกเพื่อไม่รวมในยอด)</p>
   <div id="solar-prices"></div>
   <div id="solar-note" style="font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin-top:10px"></div>
@@ -3085,6 +3093,21 @@ function solarCardHtml(title,badge,s,c,S,baseS){
     ${lines}${extra}
     <div class="combo-row govern"><span>รวมโดยประมาณ</span><span>${fmtBaht(s.cost.total)} บาท${s.perKWp?` (${fmtBaht(s.perKWp)} บาท/kWp)`:''}</span></div>${note}</div>`;
 }
+let solarView3D='current',lastSolarS=null;
+function pushSolar3D(){
+  const bar=document.getElementById('solar-view3d');
+  if(bar)bar.classList.toggle('hidden',!lastSolarS);
+  if(typeof window.setSolarLayout3D!=='function')return; // ระบบเก่าแบบไม่มีโมเดล 3D
+  const o=SOLAR_DEFAULTS;
+  window.setSolarLayout3D(lastSolarS
+    ?{rows:(lastSolarS[solarView3D]||lastSolarS.current).rows,panelW:o.panelW,panelL:o.panelL,margin:o.margin,watt:o.panelWatt}
+    :{panelW:o.panelW,panelL:o.panelL,margin:o.margin,watt:o.panelWatt});
+}
+function setSolarView3D(v){
+  solarView3D=v;
+  document.querySelectorAll('#solar-view3d .radio-btn').forEach(b=>b.classList.toggle('active',b.dataset.v3===v));
+  pushSolar3D();
+}
 function renderSolar(){
   const msg=document.getElementById('solar-msg'),cards=document.getElementById('solar-cards'),pr=document.getElementById('solar-prices'),note=document.getElementById('solar-note');
   const prices=loadPrices();
@@ -3092,12 +3115,13 @@ function renderSolar(){
     return `<tr><td style="padding:4px"><input type="checkbox" ${it.on?'checked':''} onchange="onPriceEdit('${k}','on',this)"></td><td style="padding:4px">${it.label}<div style="font-size:11px;color:var(--color-text-secondary)">${it.src}</div></td><td style="padding:4px"><input type="number" min="0" step="any" value="${it.v}" style="width:90px" onchange="onPriceEdit('${k}','v',this)"></td><td style="padding:4px;color:var(--color-text-secondary)">${it.unit}</td></tr>`;}).join('')+
     '</table><button class="calc-btn" style="margin-top:8px;padding:6px 12px;font-size:12px" onclick="resetPrices()">คืนค่าราคาเริ่มต้น</button>';
   note.innerHTML=`ราคาอ้างอิง ณ ${prices.date} — ${prices.note}. ตัวเลขเป็น <b>ราคาประเมินคร่าวๆ</b> ไม่ใช่ใบเสนอราคา.<br>วิธีนับ: แผง ${SOLAR_DEFAULTS.panelW}×${SOLAR_DEFAULTS.panelL} ม. ${SOLAR_DEFAULTS.panelWatt}W วางแนวตั้ง เว้นขอบ ${SOLAR_DEFAULTS.margin} ม.; แปรับโหลดแผงเต็มค่า ส่วนจันทัน/โครงถักคิดโหลดเฉลี่ยตามสัดส่วนแถวที่ติดตั้ง (ค่าประมาณ).`;
-  if(!purlinResult){msg.innerHTML='<div class="combo-box">กรุณาคำนวณแป (และจันทัน/โครงถักถ้ามี) ก่อน แล้วกลับมาที่แท็บนี้</div>';cards.innerHTML='';return;}
+  if(!purlinResult){lastSolarS=null;pushSolar3D();msg.innerHTML='<div class="combo-box">กรุณาคำนวณแป (และจันทัน/โครงถักถ้ามี) ก่อน แล้วกลับมาที่แท็บนี้</div>';cards.innerHTML='';return;}
   const c={sec:getPurlinSection(),sagMode,bldgLen:+document.getElementById('bldg-len').value||24,shape:buildingShape,
     purlinSpacing:+document.getElementById('purlin-spacing').value||1.2,purlinSpan:+document.getElementById('purlin-span').value||3,
     rafter:lastRafter?{sp:lastRafter.sp,Lr:lastRafter.Lr,sr:lastRafter.sr,p:purlinResult}:null,truss:!!lastTrussCalc,
     trussSpacing:+document.getElementById('t-spacing').value||3};
   const S=solarSearch(c,prices);
+  lastSolarS=S;pushSolar3D();
   const checked=['แป'].concat(c.rafter?['จันทัน']:[]).concat(c.truss?['โครงถัก']:[]);
   msg.innerHTML=`<div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">ตรวจ: ${checked.join(' + ')}${checked.length<3?' (ส่วนที่ยังไม่ได้คำนวณจะไม่ถูกตรวจ)':''}</div>`;
   if(S.fullPanels===0){cards.innerHTML='<div class="combo-box">หลังคาเล็กเกินกว่าจะวางแผงได้ (หลังหักขอบแล้ว)</div>';return;}
@@ -3538,6 +3562,7 @@ updateAll();updateRafterCarried();
   var params = {
     span:20, length:30, eave:6, rise:4, bays:6, panels:5,
     existingLoad:15, solarLoad:12, Fb:1440, panelWatt:550,
+    pnlW:1.13, pnlL:2.28, pnlMargin:0.3, pnlRows:null, // ขนาดแผง/เว้นขอบ/จำนวนแถวตามความลาด — ซิงก์จากแท็บ "แผงโซลาร์ & ราคา" (pnlRows=null = วางเต็มหลังคา)
     trussType:'gable', trussDepth:0.6
   };
   var DEFAULT_PARAMS = Object.assign({}, params); // เก็บไว้ให้ปุ่ม "รีเซ็ตเป็นค่าเริ่มต้น"
@@ -3681,16 +3706,17 @@ updateAll();updateRafterCarried();
     while(solarGroup.children.length) solarGroup.remove(solarGroup.children[0]);
     totalPanelCount = 0;
 
-    var margin = 0.25;
-    var pitchX = 1.02, pitchZ = 1.68;
-    var drawX = 0.97, drawZ = 1.62, thickness = 0.035;
+    // แผงวางแนวตั้ง: ด้านยาว (pnlL) ตามความลาด, ด้านกว้าง (pnlW) ตามความยาวอาคาร — ตรงกับ solarLayout() ของแท็บโซลาร์
+    var margin = p.pnlMargin;
+    var pitchX = p.pnlL, pitchZ = p.pnlW;
+    var drawX = Math.max(0.1, p.pnlL - 0.05), drawZ = Math.max(0.1, p.pnlW - 0.05), thickness = 0.035;
 
     var sides = solarRoofSides(p);
     var nLen = Math.max(0, Math.floor((p.length - margin*2) / pitchZ));
     if(!sides.length || nLen<=0) return;
     var startZ = -(nLen*pitchZ)/2; // จัดกึ่งกลางแนวยาว: พื้นที่เหลือจากปัดเศษแบ่งเท่ากันทั้งสองฝั่ง แทนที่จะกองไว้ปลายด้านเดียว
 
-    var perSideN = sides.map(function(side){ return Math.max(0, Math.floor((side.len - margin*2) / pitchX)); });
+    var perSideN = sides.map(function(side){ var n = Math.max(0, Math.floor((side.len - margin*2) / pitchX)); return (p.pnlRows==null) ? n : Math.min(n, p.pnlRows); });
     var count = perSideN.reduce(function(sum,n){ return sum + n*nLen; }, 0);
     if(count<=0) return;
 
@@ -4609,6 +4635,17 @@ updateAll();updateRafterCarried();
     refreshHud();
     closeEditor();
   });
+
+  /* ซิงก์ผลจากแท็บ "แผงโซลาร์ & ราคา" (ระบบเดิม) → วางแผงใน 3D ตามจำนวนแถวที่ผ่านการตรวจจริง */
+  window.setSolarLayout3D = function(o){
+    o = o || {};
+    params.pnlW = o.panelW || DEFAULT_PARAMS.pnlW;
+    params.pnlL = o.panelL || DEFAULT_PARAMS.pnlL;
+    params.pnlMargin = (o.margin==null) ? DEFAULT_PARAMS.pnlMargin : o.margin;
+    params.pnlRows = (o.rows==null) ? null : o.rows;
+    if(o.watt) params.panelWatt = o.watt;
+    rebuildScene();
+  };
 
   /* ============ Solar toggle ============ */
   var solarToggleEl = document.getElementById('solarToggle');
