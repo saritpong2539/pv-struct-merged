@@ -3101,7 +3101,7 @@ function pushSolar3D(){
   const o=SOLAR_DEFAULTS;
   window.setSolarLayout3D(lastSolarS
     ?{rows:(lastSolarS[solarView3D]||lastSolarS.current).rows,panelW:o.panelW,panelL:o.panelL,margin:o.margin,watt:o.panelWatt}
-    :{panelW:o.panelW,panelL:o.panelL,margin:o.margin,watt:o.panelWatt});
+    :{pending:true,panelW:o.panelW,panelL:o.panelL,margin:o.margin,watt:o.panelWatt});
 }
 function setSolarView3D(v){
   solarView3D=v;
@@ -3561,10 +3561,12 @@ updateAll();updateRafterCarried();
 
   var params = {
     span:20, length:30, eave:6, rise:4, bays:6, panels:5,
-    existingLoad:15, solarLoad:12, Fb:1440, panelWatt:550,
+    existingLoad:15, solarLoad:(typeof window.renderSolar==='function'?20:12), Fb:1440, panelWatt:550,
     pnlW:1.13, pnlL:2.28, pnlMargin:0.3, pnlRows:null, // ขนาดแผง/เว้นขอบ/จำนวนแถวตามความลาด — ซิงก์จากแท็บ "แผงโซลาร์ & ราคา" (pnlRows=null = วางเต็มหลังคา)
     trussType:'gable', trussDepth:0.6
   };
+  // โหมดรวมเว็บ (มีแท็บโซลาร์ของระบบเดิม): ไม่วางแผงจนกว่าจะคำนวณ และใช้น้ำหนักแผง 20 กก./ตร.ม. เท่ากัน
+  var SOLAR_GATED = (typeof window.renderSolar==='function'), solarSynced = false;
   var DEFAULT_PARAMS = Object.assign({}, params); // เก็บไว้ให้ปุ่ม "รีเซ็ตเป็นค่าเริ่มต้น"
   var TRUSS_TYPES_WITH_RIDGE = { gable:true, gable_sloped:true, inclined:true }; // ใช้ความสูงสันหลังคา (rise) จริง
   var includeSolar = false; // toggle: false = แสดงผลด้วยโหลดเดิมอย่างเดียว, true = โหลดเดิม+โซล่า
@@ -3711,6 +3713,7 @@ updateAll();updateRafterCarried();
     var pitchX = p.pnlL, pitchZ = p.pnlW;
     var drawX = Math.max(0.1, p.pnlL - 0.05), drawZ = Math.max(0.1, p.pnlW - 0.05), thickness = 0.035;
 
+    if(SOLAR_GATED && !solarSynced) return;
     var sides = solarRoofSides(p);
     var nLen = Math.max(0, Math.floor((p.length - margin*2) / pitchZ));
     if(!sides.length || nLen<=0) return;
@@ -4311,7 +4314,7 @@ updateAll();updateRafterCarried();
     document.getElementById('fcRafter').textContent = groupCount.rafter;
     document.getElementById('fcTruss').textContent = groupCount.truss;
     document.getElementById('cntPanels').textContent = totalPanelCount;
-    document.getElementById('cntKwp').textContent = (totalPanelCount * params.panelWatt / 1000).toFixed(1) + ' kWp';
+    document.getElementById('cntKwp').textContent = (SOLAR_GATED && !solarSynced) ? 'ยังไม่คำนวณในแท็บโซลาร์' : (totalPanelCount * params.panelWatt / 1000).toFixed(1) + ' kWp';
     document.getElementById('dataModeNote').textContent = 'โหมดคำนวณ: ' + (includeSolar ? 'โหลดเดิม + โซล่า' : 'โหลดเดิมอย่างเดียว');
     updatePurlinFixBox();
     updateRafterFixBox();
@@ -4643,6 +4646,7 @@ updateAll();updateRafterCarried();
     params.pnlL = o.panelL || DEFAULT_PARAMS.pnlL;
     params.pnlMargin = (o.margin==null) ? DEFAULT_PARAMS.pnlMargin : o.margin;
     params.pnlRows = (o.rows==null) ? null : o.rows;
+    solarSynced = !o.pending;
     if(o.watt) params.panelWatt = o.watt;
     rebuildScene();
   };
