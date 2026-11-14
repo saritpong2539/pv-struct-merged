@@ -1371,6 +1371,7 @@ Pr = Fcr×A/Ωc   (คำนวณแบบเดียวกันทุกช�
   </div>
 </div>
 <div id="oldAppWrap">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
 <style>
 /* ═══════════════════════════════════════════════
    PV STRUCT ADVANCED — DARK PREMIUM THEME
@@ -1856,6 +1857,86 @@ html,body{margin:0;padding:0;background:#09101f;color:#eef2fa;min-height:100%;ov
   color:var(--tx1);cursor:pointer;transition:all var(--t);
 }
 .tic-clear-btn:hover{border-color:var(--fail-bd);color:var(--fail);background:var(--fail-bg)}
+
+/* ═══════════════════════════════════════════════
+   PRO POLISH v2 (2026-11-14) — typography, spacing, hierarchy
+   ═══════════════════════════════════════════════ */
+:root{--font:'IBM Plex Sans Thai','Inter',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace;
+  --elev1:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.18);--elev2:0 2px 4px rgba(0,0,0,.35),0 12px 32px rgba(0,0,0,.3)}
+body,input,select,button,.tab{font-family:var(--font)}
+body{font-size:14.5px;line-height:1.55;background:radial-gradient(1200px 500px at 50% -10%,rgba(16,185,129,.07),transparent 60%),var(--bg0)}
+.wrap{max-width:1280px}
+
+/* Header: calmer, compact */
+.app-header{padding:16px 22px;margin-bottom:1.1rem}
+.app-title{font-size:22px;letter-spacing:0;line-height:1.25;font-weight:700}
+.app-subtitle{font-size:13px;letter-spacing:0}
+.app-contact{font-size:12.5px;letter-spacing:0}
+
+/* Tabs: sticky segmented bar */
+.tabs{position:sticky;top:8px;z-index:20;backdrop-filter:blur(10px);background:rgba(17,24,39,.82);padding:5px;gap:4px;box-shadow:var(--elev1);margin-bottom:1.6rem;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{font-size:14px;padding:10px 14px;border-radius:8px;font-weight:500;letter-spacing:0}
+.tab.active{background:linear-gradient(180deg,rgba(16,185,129,.2),rgba(16,185,129,.1));color:#6ee7b7;box-shadow:inset 0 0 0 1px rgba(16,185,129,.35)}
+
+/* Section labels: readable Thai, no forced uppercase/spacing */
+.sec-label{font-size:15px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--tx0);margin:1.6rem 0 14px;gap:12px}
+.sec-label::before{content:'';width:4px;height:16px;border-radius:2px;background:var(--g);box-shadow:0 0 10px var(--gglow)}
+.sec-label::after{background:linear-gradient(90deg,var(--bd1),transparent)}
+.result-header,.combo-title,.ls-header,.auto-header,.fix-header{font-size:13px;letter-spacing:0;text-transform:none;font-weight:600}
+
+/* Shape cards: compact, 3 across */
+.shape-grid{grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.shape-card{padding:14px 12px 12px;border-radius:14px}
+.shape-card svg{max-height:62px;width:auto;margin:0 auto 6px;display:block}
+.shape-name{font-size:15px;font-weight:600}
+.shape-sub{font-size:12px;letter-spacing:0}
+.shape-card.active{box-shadow:0 0 0 1px rgba(16,185,129,.5),0 8px 28px rgba(16,185,129,.12)}
+.truss-grid{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+
+/* Fields: cleaner, drop dot+bar clutter */
+label{font-size:13px;letter-spacing:0;color:var(--tx1);font-weight:500}
+.field:has(input:not([readonly])),.field:has(select),.field:has(.radio-group){padding-left:0;border-left:none}
+.field:has(input:not([readonly])) label::before,.field:has(select) label::before,.field:has(.radio-group) label::before{display:none}
+.field:has(input:not([readonly])) label,.field:has(select) label,.field:has(.radio-group) label{color:var(--tx0);font-weight:500}
+input,select{height:44px;font-size:15px;border-radius:10px;font-variant-numeric:tabular-nums}
+input[type=number],input[type=text]{font-family:var(--font)}
+input:not([readonly]):hover,select:hover{border-color:rgba(16,185,129,.5)}
+.grid2{gap:16px;margin-bottom:16px}
+
+/* Buttons / radios */
+.radio-btn{padding:10px 12px;font-size:14px;border-radius:10px}
+.calc-btn{padding:14px;font-size:15.5px;border-radius:12px;letter-spacing:0;margin-top:1.5rem}
+.pat-btn{font-size:13px;padding:6px 16px}
+.add-item-btn,.fix-calc-btn{font-size:14.5px}
+
+/* Results & cards: depth + mono numerics */
+.result-box,.combo-box,.load-summary,.auto-result,.fix-box,.truss-item-card,.info-row,.carried-display{box-shadow:var(--elev1);border-radius:14px}
+.result-row{padding:11px 18px;font-size:14px}
+.result-val{font-family:var(--mono);font-size:13px;font-weight:600}
+.combo-row,.load-sum-row{font-size:13.5px;padding:8px 16px}
+.info-row{font-size:14px;padding:12px 16px;border-left:3px solid var(--g)}
+.verdict{border-radius:14px;padding:16px 20px}
+.verdict-text{font-size:15.5px}.verdict-sub{font-size:13px}
+.member-row{border-radius:12px}
+.tic-ratios,.tic-maxr{font-family:var(--mono)}
+.v3d-btn{font-size:13.5px;border-radius:10px}
+.v3d-hint{font-size:12.5px}
+
+/* Login */
+.lp-card{max-width:400px;border-radius:22px}
+.lp-appname{font-size:23px;letter-spacing:0;font-weight:700}
+.lp-appsub,.lp-label{letter-spacing:0;font-size:13px}
+
+/* Solar tab cards (if present) */
+#panel-solar table{font-variant-numeric:tabular-nums}
+#panel-solar input{height:38px;font-size:14px}
+
+@media(max-width:700px){
+  .app-title{font-size:19px}.tab{font-size:13px;padding:9px 11px}
+  .sec-label{font-size:14px}.shape-grid{grid-template-columns:1fr 1fr}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
 
