@@ -453,6 +453,7 @@
   <button class="tab" onclick="switchTab('truss')">โครงถัก</button>
   <button class="tab" type="button" data-newtab="model">โมเดล 3D</button>
   <button class="tab" type="button" data-newtab="formula">สูตรคำนวณ</button>
+  <button class="tab" onclick="switchTab('solar')">แผงโซลาร์ &amp; ราคา</button>
 </div>
 </div>
 <div id="authGate">
@@ -1342,6 +1343,19 @@ Pr = Fcr×A/Ωc   (คำนวณแบบเดียวกันทุกช�
       </div>
 
       <div class="dataSection">
+        <h2>แท็บ "แผงโซลาร์ & ราคา" (เพิ่ม 2026-11-14) — วิธีนับแผงและจุดคุ้มที่สุด</h2>
+        <div class="fieldHelp">ใช้ฟังก์ชันตรวจเดิมทั้งหมด (doPurlinCalc / doRafterCalc / trussCore) โดยส่งน้ำหนักแผงเป็นพารามิเตอร์ ไม่มีสูตรใหม่ในส่วนโครงสร้าง</div>
+        <table class="summaryTable">
+          <tr><td>จำนวนแผงเต็มหลังคา</td><td>แถว = floor((ความยาวลาดเอียง − 2×0.3) ÷ 2.28), แผงต่อแถว = floor((ความยาวอาคาร − 2×0.3) ÷ 1.13), จั่วนับ 2 ด้าน — แผง 1.13×2.28 ม. 550W วางแนวตั้ง</td></tr>
+          <tr><td>กรณีไม่ผ่านที่เต็มหลังคา</td><td>ลองวาง k แถว (k = เต็ม … 1) ใช้ k มากสุดที่ทุกการตรวจผ่าน — แปรับน้ำหนักแผงเต็ม 20 kg/m² เสมอ (ถ้าแปไม่ผ่าน = 0 แผง), จันทัน/โครงถักใช้โหลดแผงเฉลี่ย 20 × k ÷ แถวทั้งหมด (ค่าประมาณ ไม่ใช่การวิเคราะห์โหลดจุด)</td></tr>
+          <tr><td>ชุดเสริมที่ลอง</td><td>แป: เพิ่มสะพาน (0/1/2 ตัว) × ประกบ 2 ตัว · จันทัน: ประกบ 2 ตัว · โครงถัก: ขยับขนาด top/bottom chord ขึ้น 0–3 ขั้นในตารางเหล็กเดิม</td></tr>
+          <tr><td>จุดคุ้มที่สุด</td><td>ค่าใช้จ่ายรวม ÷ kWp ต่ำสุด ในบรรดาชุดเสริมที่ติดตั้งแผงได้ ≥ 1 แผง (รวมค่าเสริมโครงสร้าง แผง ค่าแรง อินเวอร์เตอร์ สายไฟ) — ไม่ได้คิดระยะคืนทุนจากค่าไฟ</td></tr>
+          <tr><td>ราคา</td><td>ตารางราคาแก้ไขได้ในแท็บนั้น (เก็บในเบราว์เซอร์) เป็นราคาประเมินคร่าวๆ — บางรายการเป็นค่าประมาณของผู้พัฒนา ไม่ใช่ราคาตลาดที่ยืนยันแล้ว</td></tr>
+        </table>
+        <div class="sourceNote">แกะจาก: index_v2.html — บล็อก SOLAR-CAPACITY (solarLayout, solarChecks, solarSearch) · โดย AI ไม่ใช่วิศวกรที่มีใบอนุญาต — ต้องให้วิศวกรตรวจทานก่อนใช้งานจริงเสมอ</div>
+      </div>
+
+      <div class="dataSection">
         <h2>สรุป — เอนจินไหนใช้จริงตรงไหน</h2>
         <table class="summaryTable">
           <tr><td>ผลผ่าน/ไม่ผ่าน + "แนะนำการแก้ไข" ในแท็บ แป/จันทัน/โครงถัก</td><td>เอนจินเก่า (Live, ด้านบนนี้) — แก้ไขให้เป็น ASD ตรงกับเอนจินใหม่แล้ว (2026-09-16)</td></tr>
@@ -2190,6 +2204,17 @@ html,body{margin:0;padding:0;background:#09101f;color:#eef2fa;min-height:100%;ov
   </div>
 </div>
 
+<!-- ===== SOLAR & PRICE ===== -->
+<div id="panel-solar" class="panel">
+  <style>#panel-solar.active{display:block}#panel-solar .combo-box{width:100%;box-sizing:border-box}#panel-solar .combo-box>div:not(.combo-row){padding-left:12px;padding-right:12px}</style>
+  <p class="sec-label">จำนวนแผงโซลาร์ที่ติดตั้งได้ &amp; ประมาณราคา</p>
+  <div id="solar-msg"></div>
+  <div id="solar-cards"></div>
+  <p class="sec-label">ตารางราคา (แก้ไขได้ — ติ๊กออกเพื่อไม่รวมในยอด)</p>
+  <div id="solar-prices"></div>
+  <div id="solar-note" style="font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin-top:10px"></div>
+</div>
+
 <!-- 3D -->
 <div id="panel-model3d" class="panel">
   <div class="redirect3dNote">
@@ -2255,7 +2280,7 @@ let trussType='gable',webPat='gv',diagPat='ll';
 let trussItems=[],lastTrussCalc=null;
 let trussNumCols=0;
 let roofWt=5,ceilWt=0,liveLoad=30,terrain='city';
-let purlinResult=null;
+let purlinResult=null,lastRafter=null;
 
 /* Expose state to module scripts (let bindings are NOT on window) */
 window._appState = () => ({
@@ -2436,8 +2461,10 @@ function switchTab(t){
   if (typeof window!=='undefined' && window.setMode) window.setMode('old');
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab')[{purlin:0,rafter:1,truss:2,model3d:3}[t]].classList.add('active');
+  /* หาปุ่มจาก onclick ไม่ใช้ตำแหน่ง — เว็บที่รวมแล้วแทรกปุ่มแท็บเพิ่มกลางแถว ตำแหน่งจึงไม่คงที่ */
+  const tabBtn=document.querySelector('.tab[onclick="switchTab(\''+t+'\')"]');if(tabBtn)tabBtn.classList.add('active');
   document.getElementById('panel-'+t).classList.add('active');
+  if(t==='solar')renderSolar();
   if(t==='rafter'){updateRafterCarried();updateRafterDisplay();}
   if(t==='truss'){buildTrussCards();drawPreview();}
   if(t==='model3d')draw3D();
@@ -2483,10 +2510,10 @@ function getPurlinSection(){
   const opt=getOpt('scg-section');return{zx:+opt.dataset.zx,zy:+opt.dataset.zx*0.3,ix:+opt.dataset.ix,tw:2,h:+opt.dataset.h||100,nw:1,wt:+opt.dataset.wt,mr:+opt.dataset.mom};
 }
 function getSagFactor(m){return m==='none'?1.0:m==='1'?0.5:0.333;}
-function doPurlinCalc(sec,sagM,isDouble){
+function doPurlinCalc(sec,sagM,isDouble,solar=20){
   const L=+document.getElementById('purlin-span').value,s=+document.getElementById('purlin-spacing').value;
   const geo=getRoofGeo();const theta=geo.theta;
-  const sw=sec.wt*(isDouble?2:1)/s;const DL=roofWt+20+ceilWt+sw,LL=liveLoad,WL=getWL_c();
+  const sw=sec.wt*(isDouble?2:1)/s;const DL=roofWt+solar+ceilWt+sw,LL=liveLoad,WL=getWL_c();
   const co=getGovCombo(DL,LL,WL);const w=co.govern*s;
   const Ley=L*getSagFactor(sagM),wx=w*Math.cos(theta),wy=w*Math.sin(theta);
   const Mx=wx*L*L/8,My=wy*Ley*Ley/8,Vx=wx*L/2;
@@ -2584,6 +2611,7 @@ function calcRafter(){
   if(!purlinResult){alert('กรุณาคำนวณแปก่อน');return;}
   const p=purlinResult,geo=p.geo;const Lr=geo.horizLen,sr=p.span;
   const sp=getRafterRawProps();const mul=sp.is2C?2:1;const res=doRafterCalc(Lr,sr,mul,sp.Zx,sp.Ix,sp.tw,sp.h,sp.wSelf,sp.nWebs,p);
+  lastRafter={sp,Lr,sr};
 
   renderCombo('r-combo-box',p.DL_pm2+res.selfW,p.LL_pm2,p.WL_pm2,'');
   document.getElementById('rr-combo').textContent=res.co.name+' = '+rd(res.co.govern,1)+' kgf/m²';
@@ -2769,7 +2797,13 @@ function buildMemberRows(){
 function rebuildTSecOpts(mid){const cat=document.getElementById('m-cat-'+mid).value;const sel=document.getElementById('m-size-'+mid);sel.innerHTML='';TSEC[cat].forEach(s=>{const o=document.createElement('option');o.value=s.l;o.textContent=s.l;['zx','ix','A','wt'].forEach(k=>{o.dataset[k]=s[k];});sel.appendChild(o);});}
 function getTSecProps(mid){const opt=document.getElementById('m-size-'+mid).options[document.getElementById('m-size-'+mid).selectedIndex];return{zx:+opt.dataset.zx,ix:+opt.dataset.ix,A:+opt.dataset.A,wt:+opt.dataset.wt,label:opt.value};}
 
-function calcTruss(){
+function getTSecStepped(mid,step){
+  const cat=document.getElementById('m-cat-'+mid).value,sel=document.getElementById('m-size-'+mid);
+  const list=TSEC[cat],s=list[Math.min(list.length-1,sel.selectedIndex+step)];
+  return{zx:s.zx,ix:s.ix,A:s.A,wt:s.wt,label:s.l};
+}
+/* แกนคำนวณโครงถัก (ไม่แตะ DOM ผลลัพธ์) — solar = น้ำหนักแผง kg/m², step = ขยับขนาด top/bottom chord ขึ้นกี่ขั้น */
+function trussCore(solar=20,step=0){
   const span=+document.getElementById('t-span').value,ht=+document.getElementById('t-height').value;
   const panels=+document.getElementById('t-panels').value,spacing=+document.getElementById('t-spacing').value;
   const area=+document.getElementById('t-area').value||36;
@@ -2778,7 +2812,7 @@ function calcTruss(){
 
   // น้ำหนักรวม = น้ำหนักรวมโครงถัก 1 ตัว / พื้นที่หลังคา 1 ช่วง
   // คำนวณน้ำหนักเหล็กทุกชิ้นส่วน
-  const tcP=getTSecProps('tc'),bcP=getTSecProps('bc'),wbP=getTSecProps('web'),dgP=getTSecProps('diag');
+  const tcP=step?getTSecStepped('tc',step):getTSecProps('tc'),bcP=step?getTSecStepped('bc',step):getTSecProps('bc'),wbP=getTSecProps('web'),dgP=getTSecProps('diag');
   const webLen=ht; // ความยาว web โดยเฉลี่ย (m) — ใช้ความสูงโครงถัก
   const diagLen=Math.sqrt(ht*ht+panelLen*panelLen);
   const nWeb=panels-1;const nDiag=diagPat==='no'?0:panels;
@@ -2791,7 +2825,7 @@ function calcTruss(){
 
   // แรง — ใช้ combo วิกฤต ASD (1)DL+LL หรือ (2a)DL+0.75(LL+WL) แทนการรวม DL+LL ตรงๆ แบบเดิม (เดิมไม่เคยรวมแรงลมเลย)
   const dlText=document.getElementById('lp-dl').textContent;
-  const dlVal=parseFloat(dlText)||75;
+  const dlVal=(parseFloat(dlText)||75)-20+solar;
   const llVal=liveLoad;
   const WL=getWL_c();
   const co=getGovCombo(dlVal,llVal,WL);
@@ -2813,6 +2847,10 @@ function calcTruss(){
   const Pr_tc=memberPa(tcP,panelLen),Pr_bc=memberPa(bcP,panelLen),Pr_web=memberPa(wbP,webLen),Pr_diag=diagPat==='no'?0:memberPa(dgP,diagLen);
   const r_tc=F_TC/Pr_tc,r_bc=F_BC/Pr_bc,r_web=F_web/Pr_web,r_diag=diagPat==='no'?0:F_diag/Pr_diag;
   const maxR=Math.max(r_tc,r_bc,r_web,r_diag),passStress=maxR<=1,pass=passStress;
+  return{span,ht,panels,spacing,area,nCols,effSpan,panelLen,tcP,bcP,wbP,dgP,steelWTkg,loadPm2,co,F_TC,F_BC,F_web,F_diag,Pr_tc,Pr_bc,Pr_web,Pr_diag,r_tc,r_bc,r_web,r_diag,maxR,pass};
+}
+function calcTruss(){
+  const {span,ht,panels,spacing,area,nCols,effSpan,loadPm2,F_TC,F_BC,F_web,F_diag,Pr_tc,Pr_bc,Pr_web,Pr_diag,r_tc,r_bc,r_web,r_diag,maxR,pass}=trussCore(20,0);
 
   const colText=nCols>0?` | เสากลาง ${nCols} ต้น (ช่วงสุทธิ ${rd(effSpan,2)} m)`:'';
   const typeNames={gable:'จั่ว',gable_mono:'จั่วแนวเอียง',flat:'แนวราบ',mono:'แนวเอียง',carport:'ยื่น'};
@@ -2832,6 +2870,170 @@ function calcTruss(){
   document.getElementById('truss-result').classList.remove('hidden');
   lastTrussCalc={type:typeNames[trussType]+colText,span:rd(span,1),ht:rd(ht,2),panels,spacing:rd(spacing,1),nCols,effSpan:rd(effSpan,2),tcSec:getTSecProps('tc').label,bcSec:getTSecProps('bc').label,webSec:getTSecProps('web').label,diagSec:diagPat==='no'?'-':getTSecProps('diag').label,r_tc,r_bc,r_web,r_diag,maxR,pass,loadPm2};
   document.getElementById('add-truss-btn').classList.toggle('hidden',!pass);
+}
+
+/* SOLAR-CAPACITY begin */
+/* จำนวนแผงที่ติดตั้งได้ + ชุดเสริม + ราคาประเมิน — ใช้ฟังก์ชันตรวจเดิมทั้งหมด (doPurlinCalc/doRafterCalc/trussCore) */
+const SOLAR_KG=20; // น้ำหนักแผงที่ฝังอยู่ในสูตรเดิม (kg/m²)
+const SOLAR_DEFAULTS={panelW:1.13,panelL:2.28,panelWatt:550,margin:0.3,loadKgM2:SOLAR_KG};
+const PRICE_REF={date:'2026-11-14',note:'ผสมราคาที่ค้นได้บางรายการ (ดูหมายเหตุแต่ละบรรทัด) กับค่าประมาณของผู้พัฒนา — กรุณาปรับให้ตรงกับผู้ขายจริง'};
+const PRICE_ITEMS=[
+  {key:'steel',label:'เหล็กรูปพรรณเสริม',unit:'บาท/กก.',v:28,on:true,src:'อ้างอิง: เหล็กฉาก 40×40×4 ม. 6 ม. 14.5 กก. เฉลี่ย 372.75 บาท ≈ 25.7 บาท/กก. ไม่รวม VAT (สนค. ส.ค. 2569 ผ่าน yotathai.com) บวกส่วนต่างเหล็กกล่อง/เหล็กรูปพรรณ'},
+  {key:'laborSteel',label:'ค่าแรงเสริมโครงสร้าง',unit:'บาท/กก.เหล็กที่เพิ่ม',v:15,on:true,src:'ค่าประมาณ ไม่มีแหล่งอ้างอิง'},
+  {key:'rod',label:'สะพาน (sag rod)',unit:'บาท/ชุด',v:120,on:true,src:'ค่าประมาณ ไม่มีแหล่งอ้างอิง'},
+  {key:'panel',label:'แผงโซลาร์ 550W',unit:'บาท/แผง',v:3500,on:true,src:'อ้างอิง: HomePro แผง 550W แสดง 2,477 บาท (สินค้าหมด) และราคาเดิม 6,300–6,400 บาท จึงใช้ค่ากลางประมาณ'},
+  {key:'laborPanel',label:'ค่าแรงติดตั้งแผง',unit:'บาท/แผง',v:600,on:true,src:'ค่าประมาณ ไม่มีแหล่งอ้างอิง'},
+  {key:'inverter',label:'อินเวอร์เตอร์',unit:'บาท/kWp',v:7000,on:true,src:'ค่าประมาณ ไม่มีแหล่งอ้างอิง'},
+  {key:'cable',label:'สายไฟและอุปกรณ์',unit:'บาท/kWp',v:3500,on:true,src:'ค่าประมาณ ไม่มีแหล่งอ้างอิง (ตรวจเทียบ: ตัวอย่าง 10 kW ราว 250,000 บาท ≈ 25,000 บาท/kW รวมทุกอย่าง จาก naewna.com)'}
+];
+function defaultPrices(){const items={};PRICE_ITEMS.forEach(i=>{items[i.key]={label:i.label,unit:i.unit,v:i.v,on:i.on,src:i.src};});return{date:PRICE_REF.date,note:PRICE_REF.note,items};}
+
+/* จัดวางแผงแนวตั้ง (ด้านยาวตามความลาด) เว้นขอบ margin รอบพื้นที่ */
+function solarLayout(geo,bldgLen,shape,o){
+  const rows=Math.max(0,Math.floor((geo.slopeLen-2*o.margin)/o.panelL));
+  const cols=Math.max(0,Math.floor((bldgLen-2*o.margin)/o.panelW));
+  const planes=(shape==='gable'||shape==='gable_mono')?2:1;
+  return{rows,cols,planes,total:rows*cols*planes};
+}
+
+/* ตรวจทุกชิ้นส่วนเมื่อวางแผง k จาก rows แถว — แปรับโหลดแผงเต็มค่า, จันทัน/โครงถักรับค่าเฉลี่ยตามสัดส่วนแถว */
+function solarChecks(c,fix,k,rows){
+  if(k===0)return true;
+  const avg=SOLAR_KG*k/rows;
+  if(!doPurlinCalc(c.sec,fix.sag,fix.dbl,SOLAR_KG).ok)return false;
+  if(c.rafter){
+    const {sp,Lr,sr,p}=c.rafter;const p2=Object.assign({},p,{DL_pm2:p.DL_pm2-SOLAR_KG+avg});
+    const mul=sp.is2C||fix.rafDbl?2:1;
+    if(!doRafterCalc(Lr,sr,mul,sp.Zx,sp.Ix,sp.tw,sp.h,sp.wSelf,sp.nWebs,p2).pass)return false;
+  }
+  if(c.truss&&!trussCore(avg,fix.step).pass)return false;
+  return true;
+}
+
+function solarCost(qty,prices){
+  const lines=PRICE_ITEMS.map(def=>{const it=prices.items[def.key];const q=qty[def.key]||0;
+    return{key:def.key,label:it.label,unit:it.unit,qty:q,price:it.v,on:!!it.on,amount:it.on?q*it.v:0};});
+  const amt=k=>lines.find(l=>l.key===k).amount;
+  return{lines,reinforce:amt('steel')+amt('laborSteel')+amt('rod'),total:lines.reduce((a,l)=>a+l.amount,0)};
+}
+
+/* ค้นหาชุดเสริมทั้งหมด → {current, best(คุ้มสุด บาท/kWp), max(แผงมากสุด)} */
+function solarSearch(c,prices){
+  const geo=getRoofGeo(),lay=solarLayout(geo,c.bldgLen,c.shape,SOLAR_DEFAULTS);
+  const rank={none:0,'1':1,'2':2},base={sag:c.sagMode,dbl:false,rafDbl:false,step:0};
+  const nPurlin=(Math.floor(geo.slopeLen/c.purlinSpacing)+1)*lay.planes,nSpans=Math.ceil(c.bldgLen/c.purlinSpan);
+  const nRafter=(Math.floor(c.bldgLen/c.purlinSpan)+1)*lay.planes,nTruss=Math.floor(c.bldgLen/c.trussSpacing)+1;
+  const sags=['none','1','2'].filter(s=>rank[s]>=rank[c.sagMode]);
+  const rafOpts=c.rafter&&!c.rafter.sp.is2C?[false,true]:[false],stepOpts=c.truss?[0,1,2,3]:[0];
+  const t0=c.truss?trussCore(0,0):null;
+  const cands=[];
+  sags.forEach(sag=>[false,true].forEach(dbl=>rafOpts.forEach(rafDbl=>stepOpts.forEach(step=>{
+    const fix={sag,dbl,rafDbl,step};let kmax=0;
+    for(let k=lay.rows;k>=1;k--){if(solarChecks(c,fix,k,lay.rows)){kmax=k;break;}}
+    const panels=kmax*lay.cols*lay.planes,kWp=panels*SOLAR_DEFAULTS.panelWatt/1000;
+    let kg=0;
+    if(dbl)kg+=c.sec.wt*c.bldgLen*nPurlin;
+    if(rafDbl)kg+=c.rafter.sp.wSelf*geo.slopeLen*nRafter;
+    if(step){const t1=trussCore(0,step);kg+=((t1.tcP.wt-t0.tcP.wt)+(t1.bcP.wt-t0.bcP.wt))*t0.effSpan*2*nTruss;}
+    const rods=(rank[sag]-rank[c.sagMode])*nSpans*nPurlin;
+    const cost=solarCost({steel:kg,laborSteel:kg,rod:rods,panel:panels,laborPanel:panels,inverter:kWp,cable:kWp},prices);
+    cands.push({fix,rows:kmax,panels,kWp,kg,rods,cost,perKWp:kWp>0?cost.total/kWp:null,isBase:sag===base.sag&&!dbl&&!rafDbl&&!step});
+  }))));
+  const current=cands.find(x=>x.isBase);
+  const withP=cands.filter(x=>x.panels>0);
+  let best=current,max=current;
+  if(withP.length){
+    max=withP.reduce((a,b)=>b.panels>a.panels||(b.panels===a.panels&&b.cost.total<a.cost.total)?b:a);
+    best=withP.reduce((a,b)=>b.perKWp<a.perKWp||(b.perKWp===a.perKWp&&b.panels>a.panels)?b:a);
+  }
+  return{current,best,max,rowsMax:lay.rows,cols:lay.cols,planes:lay.planes,fullPanels:lay.total};
+}
+/* SOLAR-CAPACITY end */
+
+/* ===== SOLAR TAB (UI) ===== */
+const SOLAR_PRICE_KEY='pvsolar_prices_v1';
+function loadPrices(){
+  const p=defaultPrices();
+  try{const s=JSON.parse(localStorage.getItem(SOLAR_PRICE_KEY)||'null');
+    if(s&&s.items)Object.keys(s.items).forEach(k=>{if(p.items[k]){const v=+s.items[k].v;if(isFinite(v)&&v>=0)p.items[k].v=v;p.items[k].on=!!s.items[k].on;}});}catch(e){}
+  return p;
+}
+function savePrices(p){try{const o={items:{}};Object.keys(p.items).forEach(k=>{o.items[k]={v:p.items[k].v,on:p.items[k].on};});localStorage.setItem(SOLAR_PRICE_KEY,JSON.stringify(o));}catch(e){}}
+function resetPrices(){try{localStorage.removeItem(SOLAR_PRICE_KEY);}catch(e){}renderSolar();}
+function onPriceEdit(key,field,el){
+  const p=loadPrices();
+  if(field==='on')p.items[key].on=el.checked;else{const v=parseFloat(el.value);p.items[key].v=isFinite(v)&&v>=0?v:p.items[key].v;}
+  savePrices(p);renderSolar();
+}
+const fmtBaht=n=>Math.round(n).toLocaleString('en-US');
+function solarFixText(fix,c){
+  const r=[],names={'1':'1 ตัว','2':'2 ตัว'};
+  if(fix.sag!==c.sagMode)r.push('เพิ่มสะพานแป ('+names[fix.sag]+' ต่อช่วง)');
+  if(fix.dbl)r.push('ประกบแป 2 ตัว');
+  if(fix.rafDbl)r.push('ประกบจันทัน 2 ตัว');
+  if(fix.step)r.push('ขยับขนาด top/bottom chord โครงถักขึ้น '+fix.step+' ขั้น');
+  return r.length?r.join(' + '):'ไม่ต้องเสริม (ตามโครงสร้างที่เลือก)';
+}
+function solarFailReason(c){
+  if(!doPurlinCalc(c.sec,c.sagMode,false,SOLAR_KG).ok)return 'แปไม่ผ่านแม้วางแผงเพียง 1 แถว (แปรับโหลดแผงเต็มค่า)';
+  if(c.rafter){const {sp,Lr,sr,p}=c.rafter,p2=Object.assign({},p);
+    if(!doRafterCalc(Lr,sr,sp.is2C?2:1,sp.Zx,sp.Ix,sp.tw,sp.h,sp.wSelf,sp.nWebs,p2).pass)return 'จันทันไม่ผ่าน';}
+  if(c.truss)return 'โครงถักไม่ผ่าน';
+  return 'โครงสร้างไม่ผ่านการตรวจ';
+}
+/* ชิ้นส่วนที่ยังไม่ผ่านแม้ใช้ชุดเสริมแรงสุดที่ระบบลองและวางแผงเพียง 1 แถว */
+function solarBlockers(c,rows){
+  const b=[],avg=SOLAR_KG/Math.max(1,rows);
+  if(!doPurlinCalc(c.sec,'2',true,SOLAR_KG).ok)b.push('แป');
+  if(c.rafter){const {sp,Lr,sr,p}=c.rafter,p2=Object.assign({},p,{DL_pm2:p.DL_pm2-SOLAR_KG+avg});
+    if(!doRafterCalc(Lr,sr,2,sp.Zx,sp.Ix,sp.tw,sp.h,sp.wSelf,sp.nWebs,p2).pass)b.push('จันทัน');}
+  if(c.truss&&!trussCore(avg,3).pass)b.push('โครงถัก');
+  return b;
+}
+function solarCardHtml(title,badge,s,c,S,baseS){
+  const pc=s.panels,full=S.fullPanels;
+  const lines=s.cost.lines.filter(l=>l.on&&l.amount>0).map(l=>`<div class="combo-row"><span>${l.label} <span style="opacity:.6">(${fmtBaht(l.qty)} × ${fmtBaht(l.price)})</span></span><span>${fmtBaht(l.amount)}</span></div>`).join('');
+  let extra='';
+  if(baseS&&pc>baseS.panels)extra=`<div class="combo-row"><span>ค่าเสริมเพิ่มต่อแผงที่ได้เพิ่ม</span><span>${fmtBaht((s.cost.reinforce-baseS.cost.reinforce)/(pc-baseS.panels))} บาท/แผง</span></div>`;
+  const note=pc===0?`<div style="font-size:12px;color:#A32D2D;margin-top:6px">${solarFailReason(c)}</div>`:'';
+  return `<div class="combo-box" style="margin-bottom:12px;${badge?'border:1.5px solid #0F6E56':''}">
+    <div class="combo-title">${title}${badge?` <span style="background:#0F6E56;color:#fff;border-radius:10px;padding:1px 8px;font-size:11px;margin-left:6px">${badge}</span>`:''}</div>
+    <div style="font-size:26px;font-weight:600;margin:4px 0">${pc} แผง <span style="font-size:13px;font-weight:400;color:var(--color-text-secondary)">/ เต็มหลังคา ${full} แผง · ${s.kWp.toFixed(1)} kWp</span></div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px">${s.rows} จาก ${S.rowsMax} แถว × ${S.cols} แผง${S.planes>1?' × 2 ด้าน':''}</div>
+    <div class="combo-row"><span>ชุดเสริม</span><span style="text-align:right">${solarFixText(s.fix,c)}</span></div>
+    ${lines}${extra}
+    <div class="combo-row govern"><span>รวมโดยประมาณ</span><span>${fmtBaht(s.cost.total)} บาท${s.perKWp?` (${fmtBaht(s.perKWp)} บาท/kWp)`:''}</span></div>${note}</div>`;
+}
+function renderSolar(){
+  const msg=document.getElementById('solar-msg'),cards=document.getElementById('solar-cards'),pr=document.getElementById('solar-prices'),note=document.getElementById('solar-note');
+  const prices=loadPrices();
+  pr.innerHTML='<table style="width:100%;font-size:13px;border-collapse:collapse">'+Object.keys(prices.items).map(k=>{const it=prices.items[k];
+    return `<tr><td style="padding:4px"><input type="checkbox" ${it.on?'checked':''} onchange="onPriceEdit('${k}','on',this)"></td><td style="padding:4px">${it.label}<div style="font-size:11px;color:var(--color-text-secondary)">${it.src}</div></td><td style="padding:4px"><input type="number" min="0" step="any" value="${it.v}" style="width:90px" onchange="onPriceEdit('${k}','v',this)"></td><td style="padding:4px;color:var(--color-text-secondary)">${it.unit}</td></tr>`;}).join('')+
+    '</table><button class="calc-btn" style="margin-top:8px;padding:6px 12px;font-size:12px" onclick="resetPrices()">คืนค่าราคาเริ่มต้น</button>';
+  note.innerHTML=`ราคาอ้างอิง ณ ${prices.date} — ${prices.note}. ตัวเลขเป็น <b>ราคาประเมินคร่าวๆ</b> ไม่ใช่ใบเสนอราคา.<br>วิธีนับ: แผง ${SOLAR_DEFAULTS.panelW}×${SOLAR_DEFAULTS.panelL} ม. ${SOLAR_DEFAULTS.panelWatt}W วางแนวตั้ง เว้นขอบ ${SOLAR_DEFAULTS.margin} ม.; แปรับโหลดแผงเต็มค่า ส่วนจันทัน/โครงถักคิดโหลดเฉลี่ยตามสัดส่วนแถวที่ติดตั้ง (ค่าประมาณ).`;
+  if(!purlinResult){msg.innerHTML='<div class="combo-box">กรุณาคำนวณแป (และจันทัน/โครงถักถ้ามี) ก่อน แล้วกลับมาที่แท็บนี้</div>';cards.innerHTML='';return;}
+  const c={sec:getPurlinSection(),sagMode,bldgLen:+document.getElementById('bldg-len').value||24,shape:buildingShape,
+    purlinSpacing:+document.getElementById('purlin-spacing').value||1.2,purlinSpan:+document.getElementById('purlin-span').value||3,
+    rafter:lastRafter?{sp:lastRafter.sp,Lr:lastRafter.Lr,sr:lastRafter.sr,p:purlinResult}:null,truss:!!lastTrussCalc,
+    trussSpacing:+document.getElementById('t-spacing').value||3};
+  const S=solarSearch(c,prices);
+  const checked=['แป'].concat(c.rafter?['จันทัน']:[]).concat(c.truss?['โครงถัก']:[]);
+  msg.innerHTML=`<div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">ตรวจ: ${checked.join(' + ')}${checked.length<3?' (ส่วนที่ยังไม่ได้คำนวณจะไม่ถูกตรวจ)':''}</div>`;
+  if(S.fullPanels===0){cards.innerHTML='<div class="combo-box">หลังคาเล็กเกินกว่าจะวางแผงได้ (หลังหักขอบแล้ว)</div>';return;}
+  const same=(a,b)=>a.panels===b.panels&&JSON.stringify(a.fix)===JSON.stringify(b.fix);
+  if(S.max.panels===0){
+    const bl=solarBlockers(c,S.rowsMax);
+    cards.innerHTML=solarCardHtml('โครงสร้างปัจจุบัน','',S.current,c,S,null)+
+      '<div class="combo-box" style="border:1.5px solid #A32D2D"><div class="combo-title">เสริมตามที่ระบบลองแล้วยังติดแผงไม่ได้</div>'+
+      '<div style="font-size:13px;line-height:1.7">'+(bl.length?'ยังไม่ผ่านแม้ใช้ชุดเสริมแรงสุด: <b>'+bl.join(', ')+'</b><br>':'')+
+      'ชุดที่ระบบลอง: เพิ่มสะพาน/ประกบแป, ประกบจันทัน, ขยับ chord โครงถัก 3 ขั้น — ให้เปลี่ยนขนาดเหล็กของชิ้นส่วนนั้นให้ใหญ่ขึ้นในแท็บของมัน แล้วกลับมาดูใหม่</div></div>';
+    return;
+  }
+  const bestIsMax=same(S.best,S.max),bestIsCur=same(S.best,S.current);
+  cards.innerHTML=
+    solarCardHtml('1) โครงสร้างปัจจุบัน',bestIsCur?'คุ้มที่สุด':'',S.current,c,S,null)+
+    (bestIsCur?'':solarCardHtml('2) จุดคุ้มที่สุด (บาท/kWp ต่ำสุด)',bestIsMax?'คุ้มที่สุด · สูงสุด':'คุ้มที่สุด',S.best,c,S,S.current))+
+    (bestIsMax||same(S.max,S.current)?'':solarCardHtml('3) สูงสุดหลังเสริม','',S.max,c,S,S.current));
 }
 
 /* ===== TRUSS ITEM LIST ===== */
